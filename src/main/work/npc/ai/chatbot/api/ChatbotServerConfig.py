@@ -10,12 +10,6 @@ from work.npc.ai.chatbot.api.Version import Version
 class ChatbotServerConfig(Config):
 
     VERSION = Version.version
-    SUPPORTED_APPS = {
-        "text": {"chat", "note", "calendar", "reminder", "piece", "file"},
-        "image": {"image"},
-        "video": {"video"},
-        "audio": {"audio"},
-    }
 
     def __init__(self, *args, **kwargs):
         debugConfig = kwargs.pop("providedConfig", None)

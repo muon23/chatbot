@@ -1,0 +1,5 @@
+chatbot:
+  basePath: ${CHABOT_BASE_PATH:/tankabot}
+  serverPort: ${CHATBOT_SERVER_PORT:8080}
+  botModel: ${CHATBOT_BOT_MODEL:facebook/blenderbot-1B-distill}
+  personaExpiration: ${CHATBOT_PERSONA_EXPIRATION:1d}

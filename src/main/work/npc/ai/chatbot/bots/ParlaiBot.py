@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Iterator, Tuple
 
 from parlai.core.agents import create_agent_from_model_file
 
@@ -11,22 +11,30 @@ class ParlaiBot(Bot):
     __DEFAULT_MODEL = "zoo:blender/blender_3B/model"
 
     @classmethod
+    def of(cls, persona: List[str] = None, modelName=__DEFAULT_MODEL) -> Bot:
+        return ParlaiBot(persona, modelName) if modelName in [
+            "zoo:blender/blender_400M/model",
+            "zoo:blender/blender_3B/mode",
+            "zoo:bb3/bb3_3B/model",
+            cls.__DEFAULT_MODEL
+        ] else None
+
+    @classmethod
     def useModel(cls, modelName):
         cls.agent = create_agent_from_model_file(modelName)
 
-    def __init__(self, name: str, persona: List[str] = None, modelName=__DEFAULT_MODEL):
+    def __init__(self, persona: List[str] = None, modelName=__DEFAULT_MODEL):
         if not self.agent:
             self.useModel(modelName)
 
-        self.name = name
         self.persona = persona
         self.reset()
 
     def reset(self):
-        facts = f"your persona: My name is {self.name}.  "
+        facts = ""
 
         for fact in self.persona:
-            facts = facts + f"\nyour persona: {fact}"
+            facts = facts + f"your persona: {fact}\n"
 
         self.agent.observe({'text': facts, 'episode_done': False})
 
@@ -38,3 +46,12 @@ class ParlaiBot(Bot):
         response = self.agent.act()
 
         return response['text']
+
+    def getConversation(self) -> Iterator[Tuple[bool, str]]:
+        fromUser = True
+        for utterance in self.agent.history.history_strings[1:]:
+            yield fromUser, utterance
+            fromUser = not fromUser
+
+    def getPersona(self) -> str:
+        return self.agent.history.history_strings[0]

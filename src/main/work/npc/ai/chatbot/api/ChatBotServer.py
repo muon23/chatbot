@@ -1,12 +1,13 @@
 from sanic import Sanic
 
-from work.npc.ai.chatbot.api.ChatbotHandler import ChatbotHandler
-from work.npc.ai.chatbot.api.ChatbotServerConfig import ChatbotServerConfig
+from work.npc.ai.chatbot.api.ChatHandler import ChatHandler
+from work.npc.ai.chatbot.api.ChatBotServerConfig import ChatBotServerConfig
 from work.npc.ai.chatbot.api.HeartbeatHandler import HeartbeatHandler
+from work.npc.ai.chatbot.api.PersonaHandler import PersonaHandler
 from work.npc.ai.chatbot.api.Version import Version
 
 
-class ChatbotServer:
+class ChatBotServer:
     """ A wrapper class that hosts the main program.  It reads configurations and starts a Flask server to handle
     REST API
     """
@@ -19,11 +20,13 @@ class ChatbotServer:
         :param debugArgs: Configuration that passed in as command line arguments for unit testing
         """
         print(f'API server {Version.version} starting')
-        config = ChatbotServerConfig(providedConfig=debugConfig, providedArgs=debugArgs)
+        config = ChatBotServerConfig(providedConfig=debugConfig, providedArgs=debugArgs)
         app = Sanic(cls.__name__, config=config)
 
         app.add_route(HeartbeatHandler.as_view(), app.config.basePath + '/health')
-        app.add_route(ChatbotHandler.as_view(), app.config.basePath + '/chatbot')
+        app.add_route(ChatHandler.as_view(), app.config.basePath + '/chat/<personaId>')
+        app.add_route(PersonaHandler.as_view(), app.config.basePath + '/persona', methods=["POST"])
+        app.add_route(PersonaHandler.as_view(), app.config.basePath + '/persona/<personaId>', methods=["DELETE", "GET"])
 
         # For local debug mode (serverPort=0), just run the API.
         # Otherwise, use waitress library to snippetStart a server that listen to the port.
@@ -34,4 +37,4 @@ class ChatbotServer:
 
 
 if __name__ == '__main__':
-    ChatbotServer.main()
+    ChatBotServer.main()

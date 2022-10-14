@@ -1,5 +1,7 @@
-from sanic import json
+from sanic import json, Sanic
 from sanic.views import HTTPMethodView
+
+from work.npc.ai.chatbot.api.Persona import Personas
 
 
 class HeartbeatHandler(HTTPMethodView):
@@ -9,10 +11,9 @@ class HeartbeatHandler(HTTPMethodView):
 
     @classmethod
     async def get(cls, _):
-        """ Responds to GET to the /heartbeat endpoint.
+        sanic = Sanic.get_app()
+        Personas.purge(sanic.config.personaExpiration)
 
-        :return: Response(200) if healthy, Response(202) if busy
-        """
         if HeartbeatHandler.busy:
             return json({}, status=202, content_type='application/json')
         else:

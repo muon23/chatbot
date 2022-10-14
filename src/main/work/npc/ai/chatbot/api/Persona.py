@@ -1,3 +1,4 @@
+import logging
 import time
 from typing import Optional, Iterator, Dict
 
@@ -11,7 +12,7 @@ class Persona:
         self.id = bson.ObjectId()
         self.name = name
         self.bot = bot
-        self.createdTime = time.time()
+        self.lastAccess = time.time()
 
     def getConversation(self) -> Iterator[str]:
         for utterance in self.bot.getConversation():
@@ -34,13 +35,21 @@ class Personas:
     @classmethod
     def purge(cls, duration: float):
         now = time.time()
+        toDie = []
         for personaId in cls.personas.keys():
-            if cls.personas[personaId].createdTime + duration < now:
-                cls.personas.pop(personaId)
+            if cls.personas[personaId].lastAccess + duration < now:
+                toDie.append(personaId)
+
+        if toDie:
+            for personaId in toDie:
+                persona = cls.personas.pop(personaId)
+                logging.info(f"Persona {persona.name} {personaId} killed.")
 
     @classmethod
     def get(cls, personaId: str) -> Optional[Persona]:
-        return cls.personas.get(personaId, None)
+        persona = cls.personas.get(personaId, None)
+        persona.lastAccess = time.time()
+        return persona
 
     @classmethod
     def delete(cls, personaId: str) -> Optional[Persona]:

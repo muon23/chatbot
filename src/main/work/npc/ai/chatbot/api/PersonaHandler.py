@@ -16,9 +16,9 @@ class PersonaHandler(HTTPMethodView):
         return json(response, status=400, content_type='application/json')
 
     __modelTranslation = {
-        "bb2_400M": "facebook/blenderbot-400M-distill",
-        "bb2_1B": "facebook/blenderbot-1B-distill",
-        "bb2_3B": "zoo:blender/blender_3B/model",
+        "bb2-400M": "facebook/blenderbot-400M-distill",
+        "bb2-1B": "facebook/blenderbot-1B-distill",
+        "bb2-3B": "zoo:blender/blender_3B/model",
     }
 
     async def post(self, request):
@@ -26,22 +26,28 @@ class PersonaHandler(HTTPMethodView):
         payload = request.json
         logging.info(f"POST: {payload}")
 
-        botModel = payload.get("model", "facebook/blenderbot-1B-distill")
+        sanic = Sanic.get_app()
+
+        botModel = payload.get("model", sanic.config.get("botModel", "bb2-1B"))
         if botModel in self.__modelTranslation:
             botModel = self.__modelTranslation[botModel]
+
+        logging.info(f"Use model {botModel}")
 
         name = payload.get("name", "Bot")
         botPersona = payload.get("persona", [])
 
         bot = TransformerBot.of(botPersona, modelName=botModel) or ParlaiBot.of(botPersona, modelName=botModel)
-        persona = Personas.new(bot, name=name)
+        if bot is None:
+            return self.error(f"Unknown chat bot model {botModel}")
 
-        sanic = Sanic.get_app()
+        persona = Personas.new(bot, name=name)
 
         response = {
             "version": sanic.config.VERSION,
             "persona": str(persona.id),
             "name": persona.name,
+            "model": botModel,
         }
 
         logging.info(response)

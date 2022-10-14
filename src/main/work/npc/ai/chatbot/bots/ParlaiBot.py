@@ -27,7 +27,7 @@ class ParlaiBot(Bot):
         if not self.agent:
             self.useModel(modelName)
 
-        self.persona = persona
+        self.persona = persona if persona else []
         self.reset()
 
     def reset(self):

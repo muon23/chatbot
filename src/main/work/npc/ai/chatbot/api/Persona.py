@@ -1,5 +1,5 @@
 import time
-from typing import Optional, Iterator
+from typing import Optional, Iterator, Dict
 
 import bson
 
@@ -23,7 +23,7 @@ class Persona:
 
 
 class Personas:
-    personas: dict[str, Persona] = dict()
+    personas: Dict[str, Persona] = dict()
 
     @classmethod
     def new(cls, bot: Bot, name="Bot") -> Persona:

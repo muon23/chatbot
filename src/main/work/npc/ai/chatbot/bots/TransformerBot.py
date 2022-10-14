@@ -34,7 +34,7 @@ class TransformerBot(Bot):
 
     def reset(self):
         self.conversation = Conversation()
-        facts = ".  ".join(self.persona)
+        facts = ".  ".join(self.persona) if self.persona else ""
         self.conversation.add_user_input('Hello')
         self.conversation.append_response(facts)
         self.conversation.mark_processed()

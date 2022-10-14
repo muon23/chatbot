@@ -9,11 +9,11 @@ ENV COMMONS_PROJECT_ROOT="/app/commons"
 
 WORKDIR /app
 
-COPY ./deployment /app/search/deployment
-COPY ./src /app/search/src
+COPY ./deployment /app/chatbot/deployment
+COPY ./src /app/chatbot/src
 COPY ./commons /app/commons
 
-RUN cd /app/search/deployment \
+RUN cd /app/chatbot/deployment \
     && apt-get update \
     && apt-get -y install python3.9 curl python3.9-distutils \
     && rm -f /usr/bin/python3 \
@@ -30,7 +30,7 @@ RUN cd /app/search/deployment \
 #    && chmod +x setup-pip.sh \
 #    && ./setup-pip.sh \
 
-WORKDIR /app/search/deployment
+WORKDIR /app/chatbot/deployment
 
 # Volumes
 VOLUME ["/app/store"]

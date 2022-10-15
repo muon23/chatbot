@@ -5,7 +5,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../s
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../commons/src/main')))
 
 from work.npc.ai.chatbot.api.ChatBotServer import ChatBotServer
-
+from dotenv import load_dotenv
 
 os.environ["CHATBOT_PROJECT_ROOT"] = os.path.abspath("..")
 
@@ -14,5 +14,7 @@ projectRoot = os.environ.get("CHATBOT_PROJECT_ROOT")
 if len(sys.argv) < 2:
     print("Running environment required.  ('dev', 'uat', or 'prod')")
     exit(1)
+
+load_dotenv(f"{projectRoot}/deployment/{sys.argv[1]}/environment")
 
 ChatBotServer.main(debugArgs=["-c", f"{projectRoot}/deployment/{sys.argv[1]}/chatbot.yml"])

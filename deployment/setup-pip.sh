@@ -1,9 +1,14 @@
 #!/bin/bash
 
 set -x
-apt-get update
 
-apt-get -y install python3.9 curl python3.9-distutils
+export DEBIAN_FRONTEND=noninteractive
+export TZ=${TZ:-"Etc/UTC"}
+
+apt-get update
+apt-get -y install python3.9
+apt-get -y install python3.9-distutils
+apt-get -y install curl
 
 rm -f /usr/bin/python3
 ln -s /usr/bin/python3.9 /usr/bin/python3

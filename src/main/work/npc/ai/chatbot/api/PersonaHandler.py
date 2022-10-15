@@ -66,9 +66,9 @@ class PersonaHandler(HTTPMethodView):
 
         response = {
             "version": sanic.config.VERSION,
-            "persona": str(persona.id),
             "name": persona.name,
-            "facts": list(persona.getPersona()),
+            "persona": list(persona.getPersona()),
+            "model": persona.bot.getModelName(),
         }
 
         logging.info(response)

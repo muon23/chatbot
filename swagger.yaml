@@ -1,0 +1,252 @@
+openapi: 3.0.3
+
+info:
+  title: Conversational Chatbot API
+  description: API for accessing the conversational chatbot
+  version: 0.x
+
+servers:
+  - url: 'http://uat-aios-api-01.aws.tankatalk.com:8080/tankabot'
+    description: UAT server
+
+paths:
+  /health:
+    get:
+      summary: Health check.
+      responses:
+        '202':
+          description: Busy
+        '200':
+          description: OK
+
+  /persona:
+    post:
+      summary: Creates a persona
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Name the bot
+                  required: false
+                  default: "Bot"
+                  example: "Alice"
+                persona:
+                  type: array
+                  items:
+                    type: string
+                  description: List the facts that describes the bot's persona
+                  required: false
+                  default: []
+                  example: ["I am a woman", "I live in New York City", "I like cheese", "I like to swim"]
+                model:
+                  type: string
+                  description: What chatbot model to use
+                  required: false
+                  default: "bb2-1B"
+                  example: "bb2-1B"
+
+      responses:
+        200:
+          description: New persona information
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [version, presona, name, model]
+                properties:
+                  vesion:
+                    type: string
+                    description: Server version
+                    example: "0.1.0"
+                  persona:
+                    type: string
+                    description: ID of the new persona.  This shall be used to chat and access info about the persona latter.
+                    example: "634999f76c4ec20d51bebad2"
+                  name:
+                    type: string
+                    description: The name of the bot
+                    example: "Alice"
+                  model:
+                    type: string
+                    description: The actual bot model used
+                    example: "facebook/blenderbot-1B-distill"
+        400:
+          description: The request failed and this is the error messages
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [error]
+                properties:
+                  error:
+                    type: string
+                    description: The error message
+                    example:
+                      - "Unknown chat bot model {botModel}"
+
+  /persona/{personaId}:
+    get:
+      summary: Gets the persona description back
+      responses:
+        200:
+          description: persona description
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [version, presona, name, model]
+                properties:
+                  vesion:
+                    type: string
+                    description: Server version
+                    example: "0.1.0"
+                  persona:
+                    type: array
+                    items:
+                      type: string
+                    description: List the facts that describes the bot's persona
+                    example: ["I am a woman", "I live in New York City", "I like cheese", "I like to swim"]
+                  name:
+                    type: string
+                    description: The name of the bot
+                    example: "Alice"
+                  model:
+                    type: string
+                    description: The name of the bot model
+                    example: "facebook/blenderbot-1B-distill"
+        400:
+          description: The request failed and this is the error messages
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ error ]
+                properties:
+                  error:
+                    type: string
+                    description: The error message
+                    example:
+                      - "persona {personaId} not found"
+
+    delete:
+      description: Delete the presona
+      responses:
+        200:
+          description: The persona is deleted successfully
+        202:
+          description: The persona does not exist
+
+  /chat/{personaId}:
+    post:
+      summary: Chat to the bot
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                utterance:
+                  type: string
+                  description: What to say to the bot
+                  required: true
+                  example: "Hi.  How are you doing?"
+                reset:
+                  type: boolean
+                  description: Make the bot forget all the previous conversation
+                  required: false
+                  example: flase
+      responses:
+        200:
+          description: The reply from the bot
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [version, presona, name, model]
+                properties:
+                  vesion:
+                    type: string
+                    description: Server version
+                    example: "0.1.0"
+                  persona:
+                    type: string
+                    description: ID of the persona.
+                    example: "634999f76c4ec20d51bebad2"
+                  name:
+                    type: string
+                    description: The name of the bot
+                    example: "Alice"
+                  reply:
+                    type: string
+                    description: The actual bot model used
+                    example: " I am doing well.  Just got back from swimming.  What are you up to?"
+        400:
+          description: The request failed and this is the error messages
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ error ]
+                properties:
+                  error:
+                    type: string
+                    description: The error message
+                    example:
+                      - "persona {personaId} not found"
+
+    get:
+      summary: Gets the history of the conversation
+      responses:
+        200:
+          description: persona description
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [version, presona, name, model]
+                properties:
+                  vesion:
+                    type: string
+                    description: Server version
+                    example: "0.1.0"
+                  persona:
+                    type: string
+                    description: ID of the persona.
+                    example: "634999f76c4ec20d51bebad2"
+                  name:
+                    type: string
+                    description: The name of the bot
+                    example: "Alice"
+                  conversation:
+                    type: array
+                    items:
+                      type: string
+                    description: List the previous utterances of this conversation
+                    example: [
+                        "You: Hi.  How are you doing?",
+                        "June:  I am doing well.  Just got back from swimming.  What are you up to?",
+                        "You: How nice.  Do you do that everyday?",
+                        "June:  I do.  It is a great way to stay in shape.  Where do you live?",
+                        "You: I live in the Bay Area.  It is hard to find an affortable gym with good swimming pools here ",
+                        "June:  I know what you mean.  There are a lot of gyms in the bay area."
+                    ]
+
+        400:
+          description: The request failed and this is the error messages
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ error ]
+                properties:
+                  error:
+                    type: string
+                    description: The error message
+                    example:
+                      - "persona {personaId} not found"

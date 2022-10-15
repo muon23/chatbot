@@ -6,7 +6,7 @@ from work.npc.ai.chatbot.bots.Bot import Bot
 
 
 class TransformerBot(Bot):
-    nlp = None
+    models: dict = dict()
 
     __DEFAULT_MODEL = "facebook/blenderbot-1B-distill"
 
@@ -18,15 +18,12 @@ class TransformerBot(Bot):
             cls.__DEFAULT_MODEL
         ] else None
 
-    @classmethod
-    def useModel(cls, modelName):
-        tokenizer = AutoTokenizer.from_pretrained(modelName)
-        model = AutoModelForSeq2SeqLM.from_pretrained(modelName)
-        cls.nlp = ConversationalPipeline(model=model, tokenizer=tokenizer)
-
     def __init__(self, persona: List[str] = None, modelName=__DEFAULT_MODEL):
-        if not self.nlp:
-            self.useModel(modelName)
+        self.modelName = modelName
+        if modelName not in self.models:
+            tokenizer = AutoTokenizer.from_pretrained(modelName)
+            model = AutoModelForSeq2SeqLM.from_pretrained(modelName)
+            self.models[modelName] = ConversationalPipeline(model=model, tokenizer=tokenizer)
 
         self.persona = persona
         self.conversation = None
@@ -44,7 +41,8 @@ class TransformerBot(Bot):
             print(f">> {utterance}")
 
         self.conversation.add_user_input(utterance)
-        result = self.nlp([self.conversation], do_sample=False, max_length=1000)
+        model = self.models[self.modelName]
+        result = model([self.conversation], do_sample=False, max_length=1000)
         *_, last = result.iter_texts()
 
         self.conversation.mark_processed()
@@ -60,3 +58,6 @@ class TransformerBot(Bot):
         conv = self.conversation.iter_texts()
         next(conv)  # The first one is a fake user prompt "Hello"
         return next(conv)[1]
+
+    def getModelName(self) -> str:
+        return self.modelName

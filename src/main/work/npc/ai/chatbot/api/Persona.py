@@ -48,7 +48,8 @@ class Personas:
     @classmethod
     def get(cls, personaId: str) -> Optional[Persona]:
         persona = cls.personas.get(personaId, None)
-        persona.lastAccess = time.time()
+        if persona:
+            persona.lastAccess = time.time()
         return persona
 
     @classmethod

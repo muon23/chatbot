@@ -7,6 +7,9 @@ ENV CHATBOT_SERVER_PORT=8080
 ENV CHATBOT_PROJECT_ROOT="/app/chatbot"
 ENV COMMONS_PROJECT_ROOT="/app/commons"
 
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Etc/UTC
+
 WORKDIR /app
 
 COPY ./deployment /app/chatbot/deployment

@@ -6,7 +6,6 @@ from work.npc.ai.chatbot.bots.Bot import Bot
 
 
 class ParlaiBot(Bot):
-    agent = None
 
     __DEFAULT_MODEL = "zoo:blender/blender_3B/model"
 
@@ -19,14 +18,9 @@ class ParlaiBot(Bot):
             cls.__DEFAULT_MODEL
         ] else None
 
-    @classmethod
-    def useModel(cls, modelName):
-        cls.agent = create_agent_from_model_file(modelName)
-
     def __init__(self, persona: List[str] = None, modelName=__DEFAULT_MODEL):
-        if not self.agent:
-            self.useModel(modelName)
-
+        self.modelName = modelName
+        self.agent = create_agent_from_model_file(modelName)
         self.persona = persona if persona else []
         self.reset()
 
@@ -55,3 +49,6 @@ class ParlaiBot(Bot):
 
     def getPersona(self) -> str:
         return self.agent.history.history_strings[0]
+
+    def getModelName(self) -> str:
+        return self.modelName

@@ -5,10 +5,6 @@ from typing import TypeVar, Iterator, Tuple
 class Bot(ABC):
     Bot = TypeVar("Bot")
 
-    @classmethod
-    def useModel(cls, modelName: str):
-        pass
-
     @abstractmethod
     def reset(self):
         pass
@@ -25,3 +21,6 @@ class Bot(ABC):
     def getPersona(self) -> str:
         pass
 
+    @abstractmethod
+    def getModelName(self) -> str:
+        pass

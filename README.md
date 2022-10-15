@@ -40,6 +40,8 @@ They shall be stated as the bot's self-introduction.
 That is, use "I" in the sentence.
 This field is optional.  If it is not given, the bot takes on no particular persona.
 
+(*Note: BB2 models doesn't handle "My" sentences too well, so use only "I" for better experience.*)
+
 The `name` field gives the bot a name.  This is optional.  
 If it is not given, the bot is named "Bot".
 
@@ -197,7 +199,7 @@ GET  http://localhost:8080/tankabot/chat/634a383d6890320d447b9878
 If a persona is not accessed for a period, it will be automatically deleted.
 The duration is configured by the system.  The default is one day.
 
-## Chatbot server Deployment
+## Chatbot Server Deployment
 
 ### Run locally
 

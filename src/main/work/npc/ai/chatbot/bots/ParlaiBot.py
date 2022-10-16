@@ -32,10 +32,7 @@ class ParlaiBot(Bot):
 
         self.agent.observe({'text': facts, 'episode_done': False})
 
-    def respondTo(self, utterance: str, show=False):
-        if show:
-            print(f">> {utterance}")
-
+    def respondTo(self, utterance: str, **kwargs):
         self.agent.observe({'text': utterance, 'episode_done': False})
         response = self.agent.act()
 

@@ -4,6 +4,7 @@ from sanic import json, Sanic
 from sanic.views import HTTPMethodView
 
 from work.npc.ai.chatbot.api.Persona import Personas
+from work.npc.ai.chatbot.bots.Gpt3Bot import Gpt3Bot
 from work.npc.ai.chatbot.bots.ParlaiBot import ParlaiBot
 from work.npc.ai.chatbot.bots.TransformerBot import TransformerBot
 
@@ -37,7 +38,13 @@ class PersonaHandler(HTTPMethodView):
         name = payload.get("name", "Bot")
         botPersona = payload.get("persona", [])
 
-        bot = TransformerBot.of(botPersona, modelName=botModel) or ParlaiBot.of(botPersona, modelName=botModel)
+        gpt3Limit = int(sanic.config.get("CHATBOT_GPT3_LIMIT", 10))
+
+        bot = (
+                TransformerBot.of(botPersona, modelName=botModel) or
+                ParlaiBot.of(botPersona, modelName=botModel) or
+                Gpt3Bot.of(botPersona, name, modelName=botModel, utteranceLimit=gpt3Limit)
+        )
         if bot is None:
             return self.error(f"Unknown chat bot model {botModel}")
 

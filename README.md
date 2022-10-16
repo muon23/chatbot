@@ -40,9 +40,9 @@ They shall be stated as the bot's self-introduction.
 That is, use "I" in the sentence.
 This field is optional.  If it is not given, the bot takes on no particular persona.
 
-(*Note: BB2 models doesn't handle "My" sentences too well, so use only "I" for better experience.*)
+(*Note: BB2 models doesn't handle "My" sentences too well, so use only "I" for a better experience.*)
 
-The `name` field gives the bot a name.  This is optional.  
+The `name` field gives the bot a name.  This is optional.
 If it is not given, the bot is named "Bot".
 
 The `model` field specifies what chatbot model to use.
@@ -51,6 +51,7 @@ Currently, the following models are available:
 - bb2-400M: Blenderbot 2, 400M training set, Transformers library.
 - bb2-1B: Blenderbot 2, 1B training set, Transformers library.
 - bb2-3B: Blenderbot 2, 3B training set, ParlAI library.
+- gpt3: GPT-3.  An Open AI key is required.
 
 If successful, the server shall send back this response:
 
@@ -203,31 +204,47 @@ The duration is configured by the system.  The default is one day.
 
 ### Run locally
 
+#### Requirements
 Make sure the local environment satisfies the following:
 
 - Python3.8+ is required.   Python3.9 is encouraged because this project is developed and tested with it.
 - Other Python package requirements see `deployment/requirements.txt`.
+- Open AI key if you want to use "gpt3" model.
 
+#### Steps
 1. Clone this project
 2. Clone the [commons project](https://gitlab.com/npc-work/npc-work-research/commons) at the same directory as this project.
 3. Go to the `deployment` of this project.
 4. Go to the `deployment/local` of this project.  Edit the file `environemnt` to customize any environment variable if needed.
-5. Run `python3 chatbot.py local` to start the server
+5. If you want to use "gpt3" model, define environment variable OPENAI_KEY.
+6. Run `python3 chatbot.py local` to start the server
 
 ### Run on a local Docker
 
+####Requirements
+
+- 16G memory reserved for the image
+
+#### Steps
 1. Clone this project
 2. Clone the [commons project](https://gitlab.com/npc-work/npc-work-research/commons) at the same directory as this project.
 3. Go to the `deployment` of this project.
 4. Go to the `deployment/local` of this project.  Edit the file `environemnt` to customize any environment variable if needed.
-4. Run `docker.sh`.  This will run a fresh docker image and enter it.
-5. At the docker prompt, `cd` to go to the `home` directory, where you can see both `chatbot` and `commons` projects.
-6. `cd chatbot/deployment`
-7. `./setup-pip.sh` to download python3.9, necessary packages, and chatbot models.  This will take a while.
-8. `python3 chatbot.py local` to run the server
+5. Run `docker.sh`.  This will run a fresh docker image and enter it.
+6. At the docker prompt, `cd` to go to the `home` directory, where you can see both `chatbot` and `commons` projects.
+7. `cd chatbot/deployment`
+8. `./setup-pip.sh` to download python3.9, necessary packages, and chatbot models.  This will take a while.
+9. If you want to use "gpt3" model, define environment variable OPENAI_KEY.
+10. `python3 chatbot.py local` to run the server
 
 ### Deploy to AWS
 
+#### Requirement
+
+- Internet connection is needed for GPT-3 model access
+- OPENAI_KEY environment variable set in a secure manner
+
+#### Steps
 *TBD by DevOp*
 
 

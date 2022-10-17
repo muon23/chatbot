@@ -56,6 +56,7 @@ class ChatHandler(HTTPMethodView):
             "version": sanic.config.VERSION,
             "persona": str(persona.id),
             "name": persona.name,
+            "model": persona.bot.getModelName(),
             "conversation": list(persona.getConversation()),
         }
 

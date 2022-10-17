@@ -46,20 +46,30 @@ class Gpt3Bot(Bot):
 
     def __init__(self, persona: List[str] = None, name: str = "Bot", utteranceLimit: int = 10):
         if not self.completion:
-            openai.api_key = os.environ.get("OPENAI_KEY")
-            self.completion = openai.Completion()
+            accessKey = os.environ.get("OPENAI_KEY")
+            if not accessKey:
+                raise RuntimeError("Environment OPENAI_KEY not defined")
+
+            try:
+                openai.api_key = accessKey
+                self.completion = openai.Completion()
+            except Exception as e:
+                raise RuntimeError(f"Cannot access GPT-3. {str(e)}")
 
         self.conversation = Gpt3Conversation(name, persona, utteranceLimit)
 
     @staticmethod
-    def __isGoodResponse(response):
+    def __isGoodResponse(response: str) -> str:
         try:
             response = response.split("YOU: ")[0]       # Any thing after "YOU: " is not the bot's response
+            response = response.split("\n\n")[0]        # Discard anything after double new lines
 
             logging.info(f"Open AI response: {response}")
             response = response.replace("\xa0", " ")    # Extended ASCII for nonbreakable space
-            response = response.replace("\\n", "\n")    # Sometimes, GPT-3 will put in "\n"
+            response = response.replace("\n", " ")      # Concatenate into one line
+            response = response.replace("\\n", " ")     # Sometimes, GPT-3 will put in "\n"
             response = re.findall("[-A-Za-z0-9,.:;?! \"\']+", response)[0]   # Pick one that looks like a chat
+            response = response.strip()
             logging.info(f"Extracted response: {response}")
 
         except Exception as e:

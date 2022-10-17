@@ -7,7 +7,7 @@ One can give the bot a background persona and it will assume the role and chat a
 
 ### Definition
 
-A complete definition of the API is in the Swagger file "swagger.yaml".
+A complete definition of the API is in the Swagger file "[swagger.yaml](https://gitlab.com/npc-work/npc-work-research/chatbot/-/blob/main/swagger.yaml)".
 
 ### A Usage Example
 
@@ -221,7 +221,7 @@ Make sure the local environment satisfies the following:
 
 ### Run on a local Docker
 
-####Requirements
+#### Requirements
 
 - 16G memory reserved for the image
 

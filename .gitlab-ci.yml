@@ -1,0 +1,44 @@
+variables:
+  DOCKER_REGISTRY_URL: "587070264874.dkr.ecr.us-west-2.amazonaws.com"
+  REPO_NAME: tanka-${CI_PROJECT_NAME}
+
+.dockerize: &dockerize
+  - docker image prune -a -f --filter "until=24h"   
+  - docker build -t "${DOCKER_REGISTRY_URL}/${REPO_NAME}:${TAG_VERSION}" .
+  - docker push "${DOCKER_REGISTRY_URL}/${REPO_NAME}:${TAG_VERSION}"
+
+stages:
+  - build
+  - deploy
+
+build:
+  stage: build
+  script:
+    - aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin ${DOCKER_REGISTRY_URL}
+    - echo "Git clone commons pacakge ..."
+    - git clone -b master git@gitlab.com:npc-work/npc-work-research/commons.git
+    - echo "Building tag $CI_COMMIT_REF_NAME ..."
+    - TAG_VERSION=$(echo $CI_COMMIT_REF_NAME | sed -E 's/^[vV]//')
+    - echo $TAG_VERSION
+    - *dockerize
+  only:
+    - /^[vV]([0-9]+)(\.([0-9]+)){0,2}(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
+  tags:
+    - npc-shell  
+
+uat-deploy:
+  stage: deploy 
+  script:
+    - APPNAME="tanka-chatbot"
+    - ENV_PREFIX=$(echo $CI_COMMIT_REF_NAME | sed -E 's/-([0-9]+)(\.([0-9]+)){0,2}|-latest//')
+    - ENV=$(echo $CI_COMMIT_REF_NAME | sed -E 's/-sg-([0-9]+)(\.([0-9]+)){0,2}|-latest//')
+    - TAG_VERSION=$(echo $CI_COMMIT_REF_NAME | sed -E 's/(dev|test|uat|prod).*-//')
+    - ssh -o "StrictHostKeyChecking=no" ubuntu@${ENV}-tanka-sg-${APPNAME}-01.aws.tankaapps.com "aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin ${DOCKER_REGISTRY_URL}"
+    - ssh -o "StrictHostKeyChecking=no" ubuntu@${ENV}-tanka-sg-${APPNAME}-01.aws.tankaapps.com "docker pull ${DOCKER_REGISTRY_URL}/${REPO_NAME}:${TAG_VERSION}"
+    - ssh -o "StrictHostKeyChecking=no" ubuntu@${ENV}-tanka-sg-${APPNAME}-01.aws.tankaapps.com "docker rm -f ${APPNAME}"
+    - ssh -o "StrictHostKeyChecking=no" ubuntu@${ENV}-tanka-sg-${APPNAME}-01.aws.tankaapps.com "docker run -d --name ${APPNAME} -v /data/logs/${APPNAME}:/opt/app/logs -p 8080:8080 -p 8081:8081 --restart=always ${DOCKER_REGISTRY_URL}/${REPO_NAME}:${TAG_VERSION} python3 chatbot.py local"
+    - ssh -o "StrictHostKeyChecking=no" ubuntu@${ENV}-tanka-sg-${APPNAME}-01.aws.tankaapps.com "docker ps -f name=${APPNAME}"
+  only:
+    - /^uat-sg.*$/
+  tags:
+    - npc-shell

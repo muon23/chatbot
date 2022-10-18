@@ -6,6 +6,7 @@ variables:
   - docker image prune -a -f --filter "until=24h"   
   - docker build -t "${DOCKER_REGISTRY_URL}/${REPO_NAME}:${TAG_VERSION}" .
   - docker push "${DOCKER_REGISTRY_URL}/${REPO_NAME}:${TAG_VERSION}"
+  - docker rmi "${DOCKER_REGISTRY_URL}/${REPO_NAME}:${TAG_VERSION}"
 
 stages:
   - build

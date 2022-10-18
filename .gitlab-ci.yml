@@ -15,6 +15,8 @@ build:
   stage: build
   script:
     - aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin ${DOCKER_REGISTRY_URL}
+    - echo "Git clone commons pacakge ..."
+    - git clone -b master git@gitlab.com:npc-work/npc-work-research/commons.git
     - echo "Building tag $CI_COMMIT_REF_NAME ..."
     - TAG_VERSION=$(echo $CI_COMMIT_REF_NAME | sed -E 's/^[vV]//')
     - echo $TAG_VERSION

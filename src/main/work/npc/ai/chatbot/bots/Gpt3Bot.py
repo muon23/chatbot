@@ -7,6 +7,8 @@ from typing import Iterator, Tuple, List
 from work.npc.ai.chatbot.bots.Bot import Bot
 import openai
 
+from work.npc.ai.utilities.Languages import Languages
+
 
 class Gpt3Conversation:
     def __changeSubject(self, fact, name):
@@ -58,17 +60,25 @@ class Gpt3Bot(Bot):
 
         self.conversation = Gpt3Conversation(name, persona, utteranceLimit)
 
-    @staticmethod
-    def __isGoodResponse(response: str) -> str:
+    def __isGoodResponse(self, response: str) -> str:
         try:
-            response = response.split("YOU: ")[0]       # Any thing after "YOU: " is not the bot's response
-            response = response.split("\n\n")[0]        # Discard anything after double new lines
-
             logging.info(f"Open AI response: {response}")
+
+            # Take only the response up to the next speaker
+            response = re.split(f"YOU: |{self.conversation.name}: ", response)[0]
+
             response = response.replace("\xa0", " ")    # Extended ASCII for nonbreakable space
-            response = response.replace("\n", " ")      # Concatenate into one line
             response = response.replace("\\n", " ")     # Sometimes, GPT-3 will put in "\n"
-            response = re.findall("[-A-Za-z0-9,.:;?! \"\']+", response)[0]   # Pick one that looks like a chat
+
+            if Languages.hanziSentences(response):
+                # For filtering Chinese
+                response = response.split("\n")[0]      # Only get the first line
+            else:
+                # For other alphabetical text
+                response = response.split("\n\n")[0]        # Discard anything after double new lines
+                response = response.replace("\n", " ")      # Concatenate multiple lines into one
+                response = re.findall("[-A-Za-z0-9,.:;?! \"\']+", response)[0]   # Pick one that looks like a chat
+
             response = response.strip()
             logging.info(f"Extracted response: {response}")
 

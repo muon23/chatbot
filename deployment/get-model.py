@@ -1,4 +1,4 @@
-import os
+# import os
 import sys
 
 # sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src/main')))
@@ -18,7 +18,8 @@ from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 from parlai.core.agents import create_agent_from_model_file
 
 transformer_models = ["facebook/blenderbot-400M-distill",
-                      "facebook/blenderbot-1B-distill"]
+                      "facebook/blenderbot-1B-distill",
+                      "facebook/blenderbot-3B"]
 
 parlai_models = ["zoo:blender/blender_400M/model",
                  "zoo:blender/blender_3B/model",

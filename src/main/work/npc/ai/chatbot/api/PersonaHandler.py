@@ -19,7 +19,9 @@ class PersonaHandler(HTTPMethodView):
     __modelTranslation = {
         "bb2-400M": "facebook/blenderbot-400M-distill",
         "bb2-1B": "facebook/blenderbot-1B-distill",
-        "bb2-3B": "zoo:blender/blender_3B/model",
+        # "bb2-3B": "zoo:blender/blender_3B/model",
+        "bb2-3B": "facebook/blenderbot-3B",
+        "gpt-3": "gpt3",
     }
 
     async def post(self, request):

@@ -22,6 +22,6 @@ pip3 install -r requirements.txt --no-cache-dir
 
 python3 get-model.py "facebook/blenderbot-400M-distill"
 python3 get-model.py "facebook/blenderbot-1B-distill"
-python3 get-model.py "zoo:blender/blender_3B/model"
+python3 get-model.py "facebook/blenderbot-3B"
 
 set +x

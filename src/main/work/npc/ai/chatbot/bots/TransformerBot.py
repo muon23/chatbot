@@ -15,6 +15,7 @@ class TransformerBot(Bot):
         return TransformerBot(persona, modelName) if modelName in [
             "facebook/blenderbot-400M-distill",
             "facebook/blenderbot-1B-distill",
+            "facebook/blenderbot-3B",
             cls.__DEFAULT_MODEL
         ] else None
 

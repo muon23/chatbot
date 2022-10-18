@@ -20,3 +20,10 @@ RUN pip3 install --no-cache-dir parlai==1.7.1
 RUN pip3 install --no-cache-dir bson==0.5.10
 RUN pip3 install --no-cache-dir python-dotenv==0.21.0
 RUN pip3 install --no-cache-dir openai==0.23.1
+
+WORKDIR /opt
+COPY ./get-model.py ./
+
+RUN python3 get-model.py "facebook/blenderbot-400M-distill" 
+RUN python3 get-model.py "facebook/blenderbot-1B-distill" 
+RUN python3 get-model.py "zoo:blender/blender_3B/model"

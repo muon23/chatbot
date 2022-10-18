@@ -29,7 +29,7 @@ build:
 uat-deploy:
   stage: deploy 
   script:
-    - APPNAME="tanka-chatbot"
+    - APPNAME="chatbot"
     - ENV_PREFIX=$(echo $CI_COMMIT_REF_NAME | sed -E 's/-([0-9]+)(\.([0-9]+)){0,2}|-latest//')
     - ENV=$(echo $CI_COMMIT_REF_NAME | sed -E 's/-sg-([0-9]+)(\.([0-9]+)){0,2}|-latest//')
     - TAG_VERSION=$(echo $CI_COMMIT_REF_NAME | sed -E 's/(dev|test|uat|prod).*-//')

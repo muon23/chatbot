@@ -22,3 +22,6 @@ VOLUME ["/app/store"]
 # Start the default service
 ENTRYPOINT []
 CMD []
+
+# install required packages from PyPI
+RUN pip3 install --no-cache-dir zhon==1.1.5

@@ -243,6 +243,8 @@ Make sure the local environment satisfies the following:
 
 - Internet connection is needed for GPT-3 model access
 - OPENAI_KEY environment variable set in a secure manner
+- Periodically issue GET to the `/health` API.
+In addition to being heartbeat for the health of the server, this also triggers the purging of inactive bots.
 
 #### Steps
 *TBD by DevOp*

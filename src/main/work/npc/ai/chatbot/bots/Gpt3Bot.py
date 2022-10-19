@@ -83,6 +83,7 @@ class Gpt3Bot(Bot):
             logging.info(f"Extracted response: {response}")
 
         except Exception as e:
+            logging.error(str(e))
             logging.error(traceback.format_exc())
             logging.error(response)
             response = None

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import TypeVar, Iterator, Tuple
+from typing import TypeVar, Iterator, Tuple, Optional
 
 
 class Bot(ABC):
@@ -10,7 +10,7 @@ class Bot(ABC):
         pass
 
     @abstractmethod
-    def respondTo(self, utterance: str, **kwargs):
+    def respondTo(self, utterance: str, **kwargs) -> Optional[str]:
         pass
 
     @abstractmethod

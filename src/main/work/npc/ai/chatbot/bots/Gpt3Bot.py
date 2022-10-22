@@ -2,7 +2,7 @@ import logging
 import os
 import re
 import traceback
-from typing import Iterator, Tuple, List
+from typing import Iterator, Tuple, List, Optional
 
 from work.npc.ai.chatbot.bots.Bot import Bot
 import openai
@@ -11,11 +11,23 @@ from work.npc.ai.utilities.Languages import Languages
 
 
 class Gpt3Conversation:
-    def __changeSubject(self, fact, name):
-        fact = fact.replace("I ", f"{name} ")
-        fact = fact.replace(" am ", " is ")
-        fact = fact.replace("My ", f"{name}'s ")
-        return fact
+    @classmethod
+    def __changeSubject(cls, fact, name):
+        fact = fact.replace("我", name)
+        fact = fact.replace("你", "我")
+
+        words = fact.split()
+        changed = []
+        for word in words:
+            changed.append(
+                name if word == "I" else
+                "is" if word == "am" else
+                f"{name}'s" if word == "my" or word == "My" else
+                "me" if word == "you" else
+                word
+            )
+
+        return " ".join(changed)
 
     def __init__(self, name: str, persona: List[str], utteranceLimit: int):
         self.name = name
@@ -33,7 +45,7 @@ class Gpt3Conversation:
         return "\n".join(
             [self.persona, "========"] +
 
-            [f"{'YOU' if user else f'{self.name}'}: {utt}"
+            [f"{'Me' if user else f'{self.name}'}: {utt}"
              for user, utt in self.conversation[-2 * self.utteranceLimit - 1:]
              ]
         ) + f"\n{self.name}: "
@@ -42,11 +54,19 @@ class Gpt3Conversation:
 class Gpt3Bot(Bot):
     completion = None
 
+    __DEFAULT_UTTERANCE_LIMIT = 20
+
     @classmethod
-    def of(cls, persona: List[str] = None, name: str = "Bot", modelName: str = None, utteranceLimit: int = 10) -> Bot:
+    def of(
+            cls,
+            persona: List[str] = None,
+            name: str = "Bot",
+            modelName: str = None,
+            utteranceLimit: int = __DEFAULT_UTTERANCE_LIMIT
+    ) -> Bot:
         return Gpt3Bot(persona, name, utteranceLimit) if modelName.lower() == "gpt3" else None
 
-    def __init__(self, persona: List[str] = None, name: str = "Bot", utteranceLimit: int = 10):
+    def __init__(self, persona: List[str] = None, name: str = "Bot", utteranceLimit: int = __DEFAULT_UTTERANCE_LIMIT):
         if not self.completion:
             accessKey = os.environ.get("OPENAI_KEY")
             if not accessKey:
@@ -60,12 +80,12 @@ class Gpt3Bot(Bot):
 
         self.conversation = Gpt3Conversation(name, persona, utteranceLimit)
 
-    def __isGoodResponse(self, response: str) -> str:
+    def __isGoodResponse(self, response: str) -> Optional[str]:
         try:
             logging.info(f"Open AI response: {response}")
 
             # Take only the response up to the next speaker
-            response = re.split(f"YOU: |{self.conversation.name}: ", response)[0]
+            response = re.split(f"Me: |{self.conversation.name}: ", response)[0]
 
             response = response.replace("\xa0", " ")    # Extended ASCII for nonbreakable space
             response = response.replace("\\n", " ")     # Sometimes, GPT-3 will put in "\n"
@@ -76,40 +96,46 @@ class Gpt3Bot(Bot):
             else:
                 # For other alphabetical text
                 response = response.split("\n\n")[0]        # Discard anything after double new lines
+                if not re.findall("[A-Za-z0-9]", response):
+                    return None                             # The response contains no alphanumerical letters
                 response = response.replace("\n", " ")      # Concatenate multiple lines into one
                 response = re.findall("[-A-Za-z0-9,.:;?! \"\']+", response)[0]   # Pick one that looks like a chat
 
             response = response.strip()
             logging.info(f"Extracted response: {response}")
+            return response
 
         except Exception as e:
             logging.error(str(e))
             logging.error(traceback.format_exc())
             logging.error(response)
-            response = None
+            return None
 
-        return response
-
-    def respondTo(self, utterance: str, **kwargs):
+    def respondTo(self, utterance: str, **kwargs)  -> Optional[str]:
         self.conversation.add_user_input(utterance)
         prompt = self.conversation.getPrompt()
         # print(prompt)
 
         response = None
         while not response:
-            response = self.completion.create(
-                prompt=prompt,
-                engine="davinci",
-                stop=None,
-                temperature=0.7,
-                top_p=1,
-                frequency_penalty=0,
-                presence_penalty=0.6,
-                best_of=1,
-                max_tokens=100
-            )
-            response = response.choices[0].text.strip()
-            response = self.__isGoodResponse(response)
+            try:
+                response = self.completion.create(
+                    prompt=prompt,
+                    engine="davinci",
+                    stop=None,
+                    temperature=0.7,
+                    top_p=1,
+                    frequency_penalty=0,
+                    presence_penalty=0.6,
+                    best_of=1,
+                    max_tokens=100
+                )
+                response = response.choices[0].text.strip()
+                response = self.__isGoodResponse(response)
+
+            except openai.error.APIConnectionError as e:
+                logging.warning(f"GPT-3 access issue: {str(e)}")
+                return None
 
         self.conversation.add_response(response)
         return response

@@ -1,4 +1,4 @@
-from typing import List, Iterator, Tuple
+from typing import List, Iterator, Tuple, Optional
 
 from parlai.core.agents import create_agent_from_model_file
 
@@ -32,7 +32,7 @@ class ParlaiBot(Bot):
 
         self.agent.observe({'text': facts, 'episode_done': False})
 
-    def respondTo(self, utterance: str, **kwargs):
+    def respondTo(self, utterance: str, **kwargs)  -> Optional[str]:
         self.agent.observe({'text': utterance, 'episode_done': False})
         response = self.agent.act()
 

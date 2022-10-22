@@ -1,4 +1,4 @@
-from typing import List, Iterator, Tuple
+from typing import List, Iterator, Tuple, Optional
 
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, ConversationalPipeline, Conversation
 
@@ -37,7 +37,7 @@ class TransformerBot(Bot):
         self.conversation.append_response(facts)
         self.conversation.mark_processed()
 
-    def respondTo(self, utterance: str, **kwargs):
+    def respondTo(self, utterance: str, **kwargs) -> Optional[str]:
         self.conversation.add_user_input(utterance)
         model = self.models[self.modelName]
         result = model([self.conversation], do_sample=False, max_length=1000)

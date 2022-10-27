@@ -1,4 +1,5 @@
 from sanic import Sanic
+from sanic_cors import CORS
 
 from work.npc.ai.chatbot.api.ChatHandler import ChatHandler
 from work.npc.ai.chatbot.api.ChatBotServerConfig import ChatBotServerConfig
@@ -22,6 +23,7 @@ class ChatBotServer:
         print(f'API server {Version.version} starting')
         config = ChatBotServerConfig(providedConfig=debugConfig, providedArgs=debugArgs)
         app = Sanic(cls.__name__, config=config)
+        CORS(app)
 
         app.add_route(HeartbeatHandler.as_view(), app.config.basePath + '/health')
         app.add_route(ChatHandler.as_view(), app.config.basePath + '/chat/<personaId>')

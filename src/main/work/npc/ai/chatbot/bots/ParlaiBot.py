@@ -24,7 +24,7 @@ class ParlaiBot(Bot):
         self.persona = persona if persona else []
         self.reset()
 
-    def reset(self):
+    def reset(self, **kwargs):
         facts = ""
 
         for fact in self.persona:

@@ -30,7 +30,7 @@ class TransformerBot(Bot):
         self.conversation = None
         self.reset()
 
-    def reset(self):
+    def reset(self, **kwargs):
         self.conversation = Conversation()
         facts = ".  ".join(self.persona) if self.persona else ""
         self.conversation.add_user_input('Hello')

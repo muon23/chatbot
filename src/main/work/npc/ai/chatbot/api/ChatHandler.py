@@ -28,7 +28,7 @@ class ChatHandler(HTTPMethodView):
         sanic = Sanic.get_app()
 
         if reset:
-            persona.bot.reset()
+            persona.bot.reset(how=reset)
         reply = persona.bot.respondTo(utterance)
 
         if not reply:

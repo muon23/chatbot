@@ -1,7 +1,4 @@
-import os
 import unittest
-
-import openai
 
 from work.npc.ai.chatbot.bots.Gpt3Bot import Gpt3Bot
 from work.npc.ai.chatbot.bots.ParlaiBot import ParlaiBot
@@ -58,37 +55,12 @@ class BotTest(unittest.TestCase):
         print(bot.getPersona())
         self.__runBot(bot)
 
-    def test_gpt3_access(self):
-        openai.api_key = os.environ.get("MY_OPENAI_KEY")
-        print(openai.api_key)
-        completion = openai.Completion()
-
-        prompt = (
-            "Alice live in New York City.\n"
-            "Alice like cheese.\n"
-            "Alice like to swim.\n"
-            "Alice is a woman.\n"
-            "Alice's mother is an Italian.\n"
-            "\n"
-            "YOU: Hi.  Long time no see.  How are you doing?\n"
-            "Alice:"
-        )
-
-        print(prompt)
-        response = completion.create(
-            prompt=prompt,
-            engine="davinci",
-            stop=None,
-            temperature=0.7,
-            top_p=1,
-            frequency_penalty=0,
-            presence_penalty=0.6,
-            best_of=1,
-            max_tokens=100
-        )
-        reply = response.choices[0].text.strip().replace("//n", "/n")
-
-        print(reply)
+    def test_gpt3_goodResponse(self):
+        bot = Gpt3Bot()
+        testStr = " yes.  (pent pent).  I can't run that fast!\n slow down\\n please!"
+        result = bot._Gpt3Bot__isGoodResponse(testStr)
+        print(result)
+        self.assertEqual(len(testStr) - 2, len(result))
 
 
 if __name__ == '__main__':

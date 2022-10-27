@@ -15,9 +15,9 @@ class Persona:
         self.lastAccess = time.time()
 
     def getConversation(self) -> Iterator[str]:
-        for utterance in self.bot.getConversation():
+        for idx, utterance in enumerate(self.bot.getConversation()):
             speaker = "You" if utterance[0] else self.name
-            yield f"{speaker}: {utterance[1]}"
+            yield f"{idx:-3}. {speaker}: {utterance[1]}"
 
     def getPersona(self) -> str:
         return self.bot.getPersona()

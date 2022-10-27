@@ -6,7 +6,7 @@ class Bot(ABC):
     Bot = TypeVar("Bot")
 
     @abstractmethod
-    def reset(self):
+    def reset(self, **kwargs):
         pass
 
     @abstractmethod

@@ -22,9 +22,12 @@ class ParlaiBot(Bot):
         self.modelName = modelName
         self.agent = create_agent_from_model_file(modelName)
         self.persona = persona if persona else []
-        self.reset()
+        self.modifyConversation()
 
-    def reset(self, **kwargs):
+    def modifyConversation(self, instruction=None, **kwargs):
+        if not instruction or "reset" not in instruction:
+            return
+
         facts = ""
 
         for fact in self.persona:

@@ -14,10 +14,11 @@ class Persona:
         self.bot = bot
         self.lastAccess = time.time()
 
-    def getConversation(self) -> Iterator[str]:
+    def getConversation(self, withEnum=None) -> Iterator[str]:
         for idx, utterance in enumerate(self.bot.getConversation()):
             speaker = "You" if utterance[0] else self.name
-            yield f"{idx:-3}. {speaker}: {utterance[1]}"
+            enum = f"{idx:-3}. " if withEnum else ""
+            yield f"{enum}{speaker}: {utterance[1]}"
 
     def getPersona(self) -> str:
         return self.bot.getPersona()

@@ -28,9 +28,12 @@ class TransformerBot(Bot):
 
         self.persona = persona
         self.conversation = None
-        self.reset()
+        self.modifyConversation()
 
-    def reset(self, **kwargs):
+    def modifyConversation(self, instruction=None, **kwargs):
+        if not instruction or "reset" not in instruction:
+            return
+
         self.conversation = Conversation()
         facts = ".  ".join(self.persona) if self.persona else ""
         self.conversation.add_user_input('Hello')

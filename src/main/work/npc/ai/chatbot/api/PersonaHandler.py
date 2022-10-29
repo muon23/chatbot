@@ -40,7 +40,7 @@ class PersonaHandler(HTTPMethodView):
         name = payload.get("name", "Bot")
         botPersona = payload.get("persona", [])
 
-        gpt3Limit = int(sanic.config.get("CHATBOT_GPT3_LIMIT", 10))
+        gpt3Limit = int(sanic.config.get("gpt3Limit", 10))
 
         try:
             bot = (

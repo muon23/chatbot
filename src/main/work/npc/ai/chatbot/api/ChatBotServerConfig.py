@@ -22,11 +22,11 @@ class ChatBotServerConfig(Config):
 
         logging.info('Running from directory: %s', os.getcwd())
 
-        chatBotConfig = self.config.get("chatbot", dict())
+        self.basePath = self.config.get("basePath", "")
+        self.personaExpiration = TimeFormatter.getDuration(self.config.get("personaExpiration", "1d"))
+        self.botModel = self.config.get("botModel", "facebook/blenderbot-1B-distill")
+        self.gpt3Limit = self.config.get("gpt3Limit", 50)
+        self.debug = self.config.get("debug", None)
 
-        self.basePath = chatBotConfig.get("basePath", "")
-        self.personaExpiration = TimeFormatter.getDuration(chatBotConfig.get("personaExpiration", "1d"))
-        self.botModel = chatBotConfig.get("botModel", "facebook/blenderbot-1B-distill")
-
-        self.serverPort = int(chatBotConfig.get('serverPort', 8080))
+        self.serverPort = int(self.config.get('serverPort', 8080))
         logging.info("Listening to port: %s", self.serverPort)

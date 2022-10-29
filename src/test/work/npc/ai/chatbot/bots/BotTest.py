@@ -62,6 +62,99 @@ class BotTest(unittest.TestCase):
         print(result)
         self.assertEqual(len(testStr) - 2, len(result))
 
+    def test_gpt3_modifyConversation(self):
+        bot = Gpt3Bot()
+
+        # Test script
+        instr1 = {
+            "script": [
+                [0, "aaa", "bbb", "ccc"],
+                [1, "ddd", "eee"],
+                ["fff"],
+                "ggg",
+                "hhh",
+                [0, "iii"]
+            ]
+        }
+
+        bot.modifyConversation(instr1)
+        conv1 = list(bot.getConversation())
+        print(conv1)
+        self.assertEqual(len(conv1), len(instr1.get("script")))
+
+        indices = list(bot._Gpt3Bot__makeIndices([7, "4", ":2", "18:", "9:11", "19:100"], 20))
+        print(indices)
+        self.assertEqual(set(indices), {4, 7, 0, 1, 2, 18, 19, 9, 10, 11})
+
+        # Test hide and replace last
+        hide = [":1", 5]
+        instr2 = {
+            "replace": "iii-replaced",
+            "hide": hide
+        }
+        bot.modifyConversation(instr2)
+        conv2 = list(bot.getConversation())
+        print(conv2)
+        hideIndices = set(bot._Gpt3Bot__makeIndices(hide, 20))
+        for i, c in enumerate(conv2):
+            if i in hideIndices:
+                self.assertIn("hidden", c[1])
+            else:
+                self.assertNotIn("hidden", c[1])
+
+        self.assertEqual(len(conv2), len(conv1))
+        self.assertIn(instr2.get("replace"), conv2[-1][1])
+
+        # Test show and replace with index
+        show = ["0", "3:"]
+        replaceStr = "ggg-replaced"
+        instr3 = {
+            "replace": f"3: {replaceStr}",
+            "show": show
+        }
+        bot.modifyConversation(instr3)
+        conv3 = list(bot.getConversation())
+        print(conv3)
+        showIndices = set(bot._Gpt3Bot__makeIndices(show, len(conv3)))
+        for i, c in enumerate(conv3):
+            if i in showIndices:
+                self.assertNotIn("hidden", c[1])
+
+        self.assertEqual(len(conv3), len(conv1))
+        self.assertIn(replaceStr, conv3[3][1])
+
+        instr4 = {
+            "redo": 1,
+            "erase": ["0:1", 5]
+        }
+        bot.modifyConversation(instr4)
+        conv4 = list(bot.getConversation())
+        print(conv4)
+        self.assertEqual(len(conv4), 1)
+        self.assertEqual(conv4[0][1], "fff")
+
+        bot.modifyConversation({**instr1, "hide_ai": True})
+        conv5 = list(bot.getConversation())
+        print(conv5)
+        self.assertEqual(len(conv5), len(conv1) + 1)
+        self.assertIn("hidden", conv5[0][1])
+        self.assertTrue(all([c[1] for c in conv5]))
+
+        bot.modifyConversation({"hide_ai": True})
+        conv6 = list(bot.getConversation())
+        print(conv6)
+        for c in conv6:
+            self.assertTrue(c[0] ^ ("hidden" in c[1]))
+
+        bot.modifyConversation({"remove_ai": True})
+        conv7 = list(bot.getConversation())
+        print(conv7)
+        self.assertTrue(all([c[0] for c in conv7]))
+
+        bot.modifyConversation({"erase": "1-2"})
+        conv8 = list(bot.getConversation())
+        print(conv8)
+
 
 if __name__ == '__main__':
     unittest.main()

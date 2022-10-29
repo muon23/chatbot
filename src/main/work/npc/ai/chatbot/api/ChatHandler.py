@@ -19,7 +19,6 @@ class ChatHandler(HTTPMethodView):
         logging.info(f"POST: {personaId}: {payload}")
 
         utterance = payload.get("utterance", "")
-        reset = payload.get("reset", False)
 
         persona = Personas.get(personaId)
         if not persona:
@@ -27,9 +26,8 @@ class ChatHandler(HTTPMethodView):
 
         sanic = Sanic.get_app()
 
-        if reset:
-            persona.bot.reset(how=reset)
-        reply = persona.bot.respondTo(utterance)
+        persona.bot.modifyConversation(payload)
+        reply = persona.bot.respondTo(utterance, debug=sanic.config.get("debug", None))
 
         if not reply:
             return self.error("Service temporarily unavailable", 503)
@@ -46,12 +44,14 @@ class ChatHandler(HTTPMethodView):
         return json(response, status=200, content_type='application/json')
 
     async def get(self, request, personaId):
-        payload = request.json
-        logging.info(f"GET: {personaId}: {payload}")
+        args = request.args
+        logging.info(f"GET: {personaId}: {args}")
 
         persona = Personas.get(personaId)
         if not persona:
             return self.error(f"persona {personaId} not found")
+
+        withEnum = args.get("enumerate", None)
 
         sanic = Sanic.get_app()
 
@@ -60,7 +60,7 @@ class ChatHandler(HTTPMethodView):
             "persona": str(persona.id),
             "name": persona.name,
             "model": persona.bot.getModelName(),
-            "conversation": list(persona.getConversation()),
+            "conversation": list(persona.getConversation(withEnum=withEnum)),
         }
 
         logging.info(response)

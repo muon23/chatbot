@@ -27,17 +27,18 @@ class ChatHandler(HTTPMethodView):
         sanic = Sanic.get_app()
 
         persona.bot.modifyConversation(payload)
-        reply = persona.bot.respondTo(utterance, debug=sanic.config.get("debug", None))
-
-        if not reply:
-            return self.error("Service temporarily unavailable", 503)
 
         response = {
             "version": sanic.config.VERSION,
             "persona": str(persona.id),
             "name": persona.name,
-            "reply": reply,
         }
+
+        if utterance:
+            reply = persona.bot.respondTo(utterance, debug=sanic.config.get("debug", None))
+            if not reply:
+                return self.error("Service temporarily unavailable", 503)
+            response["reply"] = reply
 
         logging.info(response)
 

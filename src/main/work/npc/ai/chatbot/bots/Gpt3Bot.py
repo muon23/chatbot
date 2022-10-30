@@ -84,7 +84,7 @@ class Gpt3Conversation:
 
             begin = idx + 1
 
-        self.conversation = remain + self.conversation[indices[-1]+1:]
+        self.conversation = remain + self.conversation[indices[-1] + 1:]
 
     def redo(self):
         # Clear anything after and include the last utterance from the user
@@ -151,6 +151,7 @@ class Gpt3Conversation:
 
     def length(self):
         return len(self.conversation)
+
 
 class Gpt3Bot(Bot):
     completion = None
@@ -264,7 +265,7 @@ class Gpt3Bot(Bot):
         return idx, replacement
 
     @staticmethod
-    def __makeIndices(specs, last:int) -> Iterator[int]:
+    def __makeIndices(specs, last: int) -> Iterator[int]:
         if isinstance(specs, int):
             yield specs
 
@@ -289,9 +290,9 @@ class Gpt3Bot(Bot):
 
                     end = last if m.group(3) is None else int(m.group(3))
                     if end >= last:
-                        end = last-1
+                        end = last - 1
 
-                    yield from range(begin, end+1)
+                    yield from range(begin, end + 1)
 
     def modifyConversation(self, instruction=None, **kwargs):
         if instruction is None:
@@ -330,7 +331,6 @@ class Gpt3Bot(Bot):
 
         script = instruction.get("script", [])
         if isinstance(script, list):
-            nextSpeaker = self.conversation.isUserSpeaksNext()
             for s in script:
                 if isinstance(s, str):
                     s = [s]
@@ -342,6 +342,10 @@ class Gpt3Bot(Bot):
                     self.conversation.addUtterance(utterance="  ".join(s[1:]), fromUser=s[0])
                 elif isinstance(s[0], int):
                     self.conversation.addUtterance(utterance="  ".join(s[1:]), fromUser=s[0] == 1)
-                else:
-                    self.conversation.addUtterance("  ".join(s))
-
+                elif isinstance(s[0], str):
+                    if s[0] == self.conversation.me:
+                        self.conversation.addUtterance(utterance="  ".join(s[1:]), fromUser=True)
+                    elif s[0] == self.conversation.name:
+                        self.conversation.addUtterance(utterance="  ".join(s[1:]), fromUser=False)
+                    else:
+                        self.conversation.addUtterance("  ".join(s))

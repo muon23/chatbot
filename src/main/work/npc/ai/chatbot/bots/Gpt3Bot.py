@@ -2,6 +2,7 @@ import difflib
 import logging
 import os
 import re
+import time
 import traceback
 from typing import Iterator, Tuple, List, Optional, Set
 
@@ -72,6 +73,12 @@ class Gpt3Conversation:
 
     def reset(self):
         self.conversation = []
+
+    def restore(self, script: list):
+        for utterance in script:
+            m = re.match(r"\s*((\d+).)?\s*(\w+):\s*(.+)", utterance)
+            isUser = m.group(3) == "You"
+            self.addUtterance(m.group(4), fromUser=isUser)
 
     def removeAi(self):
         self.conversation = [c for i, c in enumerate(self.conversation) if c.isUser]
@@ -188,16 +195,17 @@ class Gpt3Bot(Bot):
                 raise RuntimeError(f"Cannot access GPT-3. {str(e)}")
 
         self.conversation = Gpt3Conversation(name, persona, utteranceLimit)
+        self.tokenLimit = 200
 
     def __isGoodResponse(self, response: str) -> Optional[str]:
         try:
-            logging.info(f"Open AI response: {response}")
+            logging.info(f"OpenAI response:\n{response}")
 
             # Take only the response up to the next speaker
+            response = response.replace("\xa0", " ")  # Extended ASCII for nonbreakable space
             response = re.split(f"{self.conversation.me}: ", response)[0]
 
             response = response.replace(f"\n{self.conversation.name}: ", " ")  # The speaker remain the same
-            response = response.replace("\xa0", " ")  # Extended ASCII for nonbreakable space
             response = response.replace("\\n", " ")  # Sometimes, GPT-3 will put in "\n"
 
             if any([Languages.isIdeography(c) for c in response]):
@@ -231,27 +239,51 @@ class Gpt3Bot(Bot):
 
         response = None
         tries = 0
-        while not response and tries < 5:
+        tokenLimit = self.tokenLimit
+        recoveringUtteranceLimit = self.conversation.utteranceLimit
+        while not response:
             try:
-                tries += 1
                 response = self.completion.create(
                     prompt=prompt,
                     engine="davinci",
-                    stop=None,
+                    stop=f"{self.conversation.me}: ",
                     temperature=0.7,
                     top_p=1,
                     frequency_penalty=0,
                     presence_penalty=0.6,
                     best_of=1,
-                    max_tokens=300
+                    max_tokens=tokenLimit
                 )
                 response = response.choices[0].text.strip()
                 response = self.__isGoodResponse(response)
 
             except openai.error.APIConnectionError as e:
-                logging.warning(f"GPT-3 access issue: {str(e)}")
-                return None
+                tries += 1
+                if tries > 5:
+                    return None
+                logging.warning(f"GPT-3 access issue: {str(e)} {tries}")
+                time.sleep(1)
 
+            except openai.error.InvalidRequestError as e:
+                if tokenLimit <= 900:
+                    tokenLimit += 100
+                    logging.warning(f"GPT-3 token limit exceeded.  Extending to {tokenLimit}.\n{str(e)}")
+                elif self.conversation.utteranceLimit > 6:
+                    self.conversation.utteranceLimit -= 2
+                    prompt = self.conversation.getPrompt()
+                    print(prompt) if debug else None
+                    logging.warning(
+                        f"Maximum token reached.  Lower number of utterances to {self.conversation.utteranceLimit}"
+                    )
+                else:
+                    logging.warning(
+                        f"Minimum utterances {self.conversation.utteranceLimit} and maximum tokens {tokenLimit}, "
+                        "Use shorter utterances."
+                    )
+                    self.conversation.utteranceLimit = recoveringUtteranceLimit
+                    return None
+
+        self.conversation.utteranceLimit = recoveringUtteranceLimit
         self.conversation.addUtterance(response, fromUser=False)
         return response
 
@@ -308,6 +340,10 @@ class Gpt3Bot(Bot):
         if instruction.get("reset", False):
             self.conversation.reset()
 
+        restore = instruction.get("restore", [])
+        if restore:
+            self.conversation.restore(restore)
+
         if instruction.get("remove_ai", False):
             self.conversation.removeAi()
 
@@ -315,10 +351,12 @@ class Gpt3Bot(Bot):
             self.conversation.hideAi()
 
         hide = instruction.get("hide", [])
-        self.conversation.hide(set(self.__makeIndices(hide, self.conversation.length())))
+        if hide:
+            self.conversation.hide(set(self.__makeIndices(hide, self.conversation.length())))
 
         show = instruction.get("show", [])
-        self.conversation.show(set(self.__makeIndices(show, self.conversation.length())))
+        if show:
+            self.conversation.show(set(self.__makeIndices(show, self.conversation.length())))
 
         if instruction.get("redo", None):
             self.conversation.redo()
@@ -334,9 +372,10 @@ class Gpt3Bot(Bot):
                     self.conversation.replace(replacement, idx)
 
         erase = instruction.get("erase", [])
-        self.conversation.erase(set(self.__makeIndices(erase, self.conversation.length())))
+        if erase:
+            self.conversation.erase(set(self.__makeIndices(erase, self.conversation.length())))
 
-        script = instruction.get("script", [])
+        script = instruction.get("script", None)
         if isinstance(script, list):
             for s in script:
                 if isinstance(s, str):

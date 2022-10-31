@@ -62,6 +62,13 @@ class BotTest(unittest.TestCase):
         print(result)
         self.assertEqual(len(testStr) - 2, len(result))
 
+        testStr = """Well, yes.  This world is in danger because of the black hole.
+Me: The black hole?  I don't understand.
+"""
+        result = bot._Gpt3Bot__isGoodResponse(testStr)
+        print(result)
+        self.assertLess(len(result), 20)
+
     def test_gpt3_modifyConversation(self):
         bot = Gpt3Bot()
 

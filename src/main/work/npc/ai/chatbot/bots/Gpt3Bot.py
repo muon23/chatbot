@@ -22,16 +22,20 @@ class Gpt3Conversation:
 
     @classmethod
     def __changeSubject(cls, fact, name):
+
         fact = fact.replace("我", name)
         fact = fact.replace("你", "我")
 
-        words = fact.split()
+        words = re.split("[ ,.!?]", fact)
         changed = []
         for word in words:
+            if not word:
+                continue
+
             changed.append(
                 name if word == "I" or word == "me" else
                 "is" if word == "am" else
-                f"{name}'s" if word == "my" or word == "My" else
+                f"{name}'s" if word == "my" or word == "My" or word == "mine" else
                 "I" if word == "You" else
                 "me" if word == "you" else
                 "my" if word == "your" else
@@ -44,11 +48,14 @@ class Gpt3Conversation:
         fact = re.sub(r"I\s+are", "I am", fact)
         fact = re.sub(r"I\s+were", "I was", fact)
 
+        fact = fact.strip()
+        fact = fact + ("" if fact.endswith(".") else ".")
+
         return fact
 
     def __init__(self, name: str, persona: List[str], utteranceLimit: int):
         self.name = name
-        self.persona = "  ".join([self.__changeSubject(fact, name) + "." for fact in persona]) if persona else []
+        self.persona = "  ".join([self.__changeSubject(fact, name) for fact in persona]) if persona else []
         self.conversation: List[Gpt3Utterance] = []
         self.utteranceLimit = utteranceLimit
 

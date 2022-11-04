@@ -21,6 +21,8 @@ class Gpt3Utterance:
 
 class Gpt3Conversation:
 
+    MIN_UTTERANCES = 6
+
     @classmethod
     def __changeSubject(cls, fact, name):
 
@@ -59,6 +61,7 @@ class Gpt3Conversation:
         self.persona = "  ".join([self.__changeSubject(fact, name) for fact in persona]) if persona else []
         self.conversation: List[Gpt3Utterance] = []
         self.utteranceLimit = utteranceLimit
+        self.currentUtteranceLimit = utteranceLimit
 
         self.me = "我" if any([Languages.isIdeography(c) for c in self.name]) else "Me"
 
@@ -77,8 +80,9 @@ class Gpt3Conversation:
     def restore(self, script: list):
         for utterance in script:
             m = re.match(r"\s*((\d+).)?\s*(\w+):\s*(.+)", utterance)
-            isUser = m.group(3) == "You"
-            self.addUtterance(m.group(4), fromUser=isUser)
+            if m:
+                isUser = m.group(3) == "You"
+                self.addUtterance(m.group(4), fromUser=isUser)
 
     def removeAi(self):
         self.conversation = [c for i, c in enumerate(self.conversation) if c.isUser]
@@ -141,7 +145,7 @@ class Gpt3Conversation:
         for u in reversed(self.conversation):
             if not u.hidden:
                 utterances.append(self.__withSpeaker(u))
-                if len(utterances) > self.utteranceLimit:
+                if len(utterances) > self.currentUtteranceLimit:
                     break
         utterances.reverse()
 
@@ -165,6 +169,23 @@ class Gpt3Conversation:
 
     def length(self):
         return len(self.conversation)
+
+    def fewerUtterances(self, n: int = 2):
+        if self.currentUtteranceLimit >= self.MIN_UTTERANCES + n:
+            self.currentUtteranceLimit -= n
+            logging.info(f"Lower number of utterances to {self.currentUtteranceLimit}")
+            return self.currentUtteranceLimit
+        else:
+            logging.info(f"Cannot have any fewer utterances than {self.currentUtteranceLimit}")
+            return None
+
+    def moreUtterances(self, n: int = 2):
+        if self.currentUtteranceLimit <= self.utteranceLimit - n:
+            self.currentUtteranceLimit += n
+            logging.info(f"Raise number of utterances to {self.currentUtteranceLimit}")
+            return self.currentUtteranceLimit
+        else:
+            return None
 
 
 class Gpt3Bot(Bot):
@@ -230,7 +251,7 @@ class Gpt3Bot(Bot):
             logging.error(response)
             return None
 
-    def respondTo(self, utterance: str, **kwargs) -> Optional[str]:
+    def respondTo(self, utterance: str, **kwargs) -> Tuple[Optional[str], Optional[str]]:
         debug = kwargs.get("debug", False)
 
         self.conversation.addUtterance(utterance, fromUser=True)
@@ -240,7 +261,6 @@ class Gpt3Bot(Bot):
         response = None
         tries = 0
         tokenLimit = self.tokenLimit
-        recoveringUtteranceLimit = self.conversation.utteranceLimit
         while not response:
             try:
                 response = self.completion.create(
@@ -257,35 +277,31 @@ class Gpt3Bot(Bot):
                 response = response.choices[0].text.strip()
                 response = self.__isGoodResponse(response)
 
-            except openai.error.APIConnectionError as e:
+            except (openai.error.APIConnectionError, openai.error.RateLimitError) as e:
                 tries += 1
                 if tries > 5:
-                    return None
-                logging.warning(f"GPT-3 access issue: {str(e)} {tries}")
+                    return None, f"GPT-3 access failed after {tries} tries.  Please try later"
+                logging.warning(f"GPT-3 access failure: {str(e)} {tries}")
                 time.sleep(1)
 
             except openai.error.InvalidRequestError as e:
                 if tokenLimit <= 900:
                     tokenLimit += 100
-                    logging.warning(f"GPT-3 token limit exceeded.  Extending to {tokenLimit}.\n{str(e)}")
-                elif self.conversation.utteranceLimit > 6:
-                    self.conversation.utteranceLimit -= 2
+                    logging.info(f"GPT-3 token limit exceeded.  Extending to {tokenLimit}.\n{str(e)}")
+                elif self.conversation.fewerUtterances():
                     prompt = self.conversation.getPrompt()
                     print(prompt) if debug else None
-                    logging.warning(
-                        f"Maximum token reached.  Lower number of utterances to {self.conversation.utteranceLimit}"
-                    )
                 else:
-                    logging.warning(
-                        f"Minimum utterances {self.conversation.utteranceLimit} and maximum tokens {tokenLimit}, "
-                        "Use shorter utterances."
-                    )
-                    self.conversation.utteranceLimit = recoveringUtteranceLimit
-                    return None
+                    errorMsg = f"Minimum utterances {self.conversation.currentUtteranceLimit} "
+                    "and maximum tokens {tokenLimit}, Use shorter utterances."
+                    logging.warning(errorMsg)
+                    return None, errorMsg
 
-        self.conversation.utteranceLimit = recoveringUtteranceLimit
-        self.conversation.addUtterance(response, fromUser=False)
-        return response
+        if response:
+            self.conversation.addUtterance(response, fromUser=False)
+            self.conversation.moreUtterances()
+
+        return response, None
 
     def getConversation(self) -> Iterator[Tuple[bool, str]]:
         return ((c.isUser, f"{c.utterance}{' (hidden)' if c.hidden else ''}") for c in self.conversation.conversation)

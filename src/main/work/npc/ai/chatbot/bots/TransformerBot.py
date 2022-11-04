@@ -40,14 +40,14 @@ class TransformerBot(Bot):
         self.conversation.append_response(facts)
         self.conversation.mark_processed()
 
-    def respondTo(self, utterance: str, **kwargs) -> Optional[str]:
+    def respondTo(self, utterance: str, **kwargs) -> Tuple[Optional[str], Optional[str]]:
         self.conversation.add_user_input(utterance)
         model = self.models[self.modelName]
         result = model([self.conversation], do_sample=False, max_length=1000)
         *_, last = result.iter_texts()
 
         self.conversation.mark_processed()
-        return last[1]
+        return last[1], None
 
     def getConversation(self) -> Iterator[Tuple[bool, str]]:
         conv = self.conversation.iter_texts()

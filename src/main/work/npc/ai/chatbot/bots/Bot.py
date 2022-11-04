@@ -10,7 +10,7 @@ class Bot(ABC):
         pass
 
     @abstractmethod
-    def respondTo(self, utterance: str, **kwargs) -> Optional[str]:
+    def respondTo(self, utterance: str, **kwargs) -> Tuple[Optional[str], Optional[str]]:
         pass
 
     @abstractmethod

@@ -35,11 +35,11 @@ class ParlaiBot(Bot):
 
         self.agent.observe({'text': facts, 'episode_done': False})
 
-    def respondTo(self, utterance: str, **kwargs)  -> Optional[str]:
+    def respondTo(self, utterance: str, **kwargs) -> Tuple[Optional[str], Optional[str]]:
         self.agent.observe({'text': utterance, 'episode_done': False})
         response = self.agent.act()
 
-        return response['text']
+        return response['text'], None
 
     def getConversation(self) -> Iterator[Tuple[bool, str]]:
         fromUser = True

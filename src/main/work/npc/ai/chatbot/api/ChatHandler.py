@@ -35,9 +35,9 @@ class ChatHandler(HTTPMethodView):
         }
 
         if utterance:
-            reply = persona.bot.respondTo(utterance, debug=sanic.config.get("debug", None))
+            reply, error = persona.bot.respondTo(utterance, debug=sanic.config.get("debug", None))
             if not reply:
-                return self.error("Service temporarily unavailable", 503)
+                return self.error(error, 503)
             response["reply"] = reply
 
         logging.info(response)

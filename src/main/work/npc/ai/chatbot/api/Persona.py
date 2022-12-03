@@ -16,9 +16,16 @@ class Persona:
 
     def getConversation(self, withEnum=None) -> Iterator[str]:
         for idx, utterance in enumerate(self.bot.getConversation()):
-            speaker = "You" if utterance[0] else self.name
+            if isinstance(utterance[0], bool):
+                speaker = "You" if utterance[0] else self.name
+            else:
+                speaker = utterance[0]
+
             enum = f"{idx:-3}. " if withEnum else ""
-            yield f"{enum}{speaker}: {utterance[1]}"
+            if speaker:
+                yield f"{enum}{speaker}: {utterance[1]}"
+            else:
+                yield f"{enum} ({utterance[1]})"
 
     def getPersona(self) -> str:
         return self.bot.getPersona()

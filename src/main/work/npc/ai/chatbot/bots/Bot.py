@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import TypeVar, Iterator, Tuple, Optional
+from typing import TypeVar, Iterator, Tuple, Optional, Union
 
 
 class Bot(ABC):
@@ -14,7 +14,7 @@ class Bot(ABC):
         pass
 
     @abstractmethod
-    def getConversation(self) -> Iterator[Tuple[bool, str]]:
+    def getConversation(self) -> Iterator[Tuple[Union[bool, str], str]]:
         pass
 
     @abstractmethod

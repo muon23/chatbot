@@ -1,4 +1,4 @@
-from typing import List, Iterator, Tuple, Optional
+from typing import List, Iterator, Tuple, Optional, Union
 
 from parlai.core.agents import create_agent_from_model_file
 
@@ -41,7 +41,7 @@ class ParlaiBot(Bot):
 
         return response['text'], None
 
-    def getConversation(self) -> Iterator[Tuple[bool, str]]:
+    def getConversation(self) -> Iterator[Tuple[Union[bool, str], str]]:
         fromUser = True
         for utterance in self.agent.history.history_strings[1:]:
             yield fromUser, utterance

@@ -1,4 +1,4 @@
-from typing import List, Iterator, Tuple, Optional
+from typing import List, Iterator, Tuple, Optional, Union
 
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, ConversationalPipeline, Conversation
 
@@ -31,14 +31,12 @@ class TransformerBot(Bot):
         self.modifyConversation()
 
     def modifyConversation(self, instruction=None, **kwargs):
-        if not instruction or "reset" not in instruction:
-            return
-
-        self.conversation = Conversation()
-        facts = ".  ".join(self.persona) if self.persona else ""
-        self.conversation.add_user_input('Hello')
-        self.conversation.append_response(facts)
-        self.conversation.mark_processed()
+        if not self.conversation or (instruction and "reset" in instruction):
+            self.conversation = Conversation()
+            facts = ".  ".join(self.persona) if self.persona else ""
+            self.conversation.add_user_input('Hello')
+            self.conversation.append_response(facts)
+            self.conversation.mark_processed()
 
     def respondTo(self, utterance: str, **kwargs) -> Tuple[Optional[str], Optional[str]]:
         self.conversation.add_user_input(utterance)
@@ -49,7 +47,7 @@ class TransformerBot(Bot):
         self.conversation.mark_processed()
         return last[1], None
 
-    def getConversation(self) -> Iterator[Tuple[bool, str]]:
+    def getConversation(self) -> Iterator[Tuple[Union[bool, str], str]]:
         conv = self.conversation.iter_texts()
         next(conv)  # The first two are fake conversation to inject persona
         next(conv)

@@ -57,17 +57,44 @@ class BotTest(unittest.TestCase):
 
     def test_gpt3_goodResponse(self):
         bot = Gpt3Bot()
-        testStr = " yes.  (pent pent).  I can't run that fast!\n slow down\\n please!"
-        result = bot._Gpt3Bot__isGoodResponse(testStr)
-        print(result)
+        testStr = " yes.  (pent pent).  I can't run that fast! slow down\\n please!"
+        speaker, result = bot.parseUtterance(testStr)
+        print(speaker, result)
         self.assertEqual(len(testStr) - 2, len(result))
 
         testStr = """Well, yes.  This world is in danger because of the black hole.
 Me: The black hole?  I don't understand.
 """
-        result = bot._Gpt3Bot__isGoodResponse(testStr)
+        spoken, result = bot.processResponse(testStr, "Alice")
+        print(result[0])
+        self.assertEqual(len(result), 1)
+        self.assertLess(len(result[0]), len(testStr)-30)
+        self.assertEqual({"Alice"}, spoken)
+
+        testStr = """............................
+==========
+(one week later)
+        """
+        spoken, result = bot.processResponse(testStr)
         print(result)
-        self.assertLess(len(result), 20)
+        self.assertEqual(result[0], "NARRATION: (one week later)")
+
+        testStr = """(she walked to Emma, held her hand and shook it) Hello there.
+Emma: Hello.  I am Emma.  Glad to meet you.  You are adorable.
+April: I am April.  I am the most happy girl on the planet."""
+
+        spoken, result = bot.processResponse(testStr, "April")
+        print(spoken, result)
+
+    def test_trouble(self):
+        bot = Gpt3Bot()
+        testStr = """I am so sorry, Mike.  I did not know they were spying on us.
+Cindy:  It is OK.  We love April and Mike, too.  And we are happy that you have accepted us as part of the family.  April, would you like to be a centaur?
+April:  I don't think I am comfortable with that.  I like to be a fox girl.  Um...  I am not sure about this.
+"""
+        spoken, result = bot.processResponse(testStr, "April")
+        print(result)
+        print(spoken)
 
     def test_gpt3_modifyConversation(self):
         bot = Gpt3Bot()

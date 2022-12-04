@@ -66,6 +66,15 @@ This results in:
 "1. 调性：从小功能开始\n2. 如何改善用户体验：软装与调性\n3. 乐于助人，有责任心：Tanka用户标签\n4. 简单深刻：提升用户体验的细节"
 ```
 
+### Runtime Errors
+
+The following errors needs to propagated to the client side (frontend).
+
+- **GPT-3 access failed after {tries} tries.  Please try later.**: Something wrong with the GPT-3 service or the connection to GPT-3.
+Service is not available at the moment.
+- **Content exceeds max number of words.  Please split into shorter contents.**: This indicates that the user supplies a content that is too long.
+We shall recommend the user to split the content into smaller pieces.
+
 ## Chat Bot API
 
 ### Definition

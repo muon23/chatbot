@@ -13,7 +13,7 @@ from work.npc.ai.chatbot.summary.Summarizer import Summarizer
 class Gpt3Summarizer(Summarizer):
     completion = None
 
-    DEFAULT_TOKEN_LIMIT = 1024
+    DEFAULT_TOKEN_LIMIT = 3000
     DEFAULT_TEMPERATURE = 0.2
 
     @classmethod
@@ -104,12 +104,12 @@ class Gpt3Summarizer(Summarizer):
             ) as e:
                 tries += 1
                 if tries > 5:
-                    raise RuntimeError(f"GPT-3 access failed after {tries} tries.  Please try later")
+                    raise RuntimeError(f"GPT-3 access failed after {tries} tries.  Please try later.")
 
                 logging.warning(f"GPT-3 access failure: {str(e)} {tries}")
                 time.sleep(1)
 
             except openai.error.InvalidRequestError as e:
-                raise RuntimeError(f"Text for summarizing too long.  Please break into smaller chunks.")
+                raise RuntimeError(f"Content exceeds max number of words.  Please split into shorter contents.")
 
         return response

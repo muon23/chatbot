@@ -313,7 +313,7 @@ class Gpt3Bot(Bot):
                 try:
                     response = self.completion.create(
                         prompt=prompt,
-                        engine="davinci",
+                        engine="text-davinci-003",
                         stop=f"{self.conversation.me}: ",
                         temperature=0.7,
                         top_p=1,

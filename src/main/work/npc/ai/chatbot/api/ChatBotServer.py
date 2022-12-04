@@ -1,6 +1,9 @@
+import logging
+
 from sanic import Sanic
 from sanic_cors import CORS
 
+from work.npc.ai.chatbot.api.SummaryHandler import SummaryHandler
 from work.npc.ai.chatbot.api.ChatHandler import ChatHandler
 from work.npc.ai.chatbot.api.ChatBotServerConfig import ChatBotServerConfig
 from work.npc.ai.chatbot.api.HeartbeatHandler import HeartbeatHandler
@@ -25,10 +28,25 @@ class ChatBotServer:
         app = Sanic(cls.__name__, config=config)
         CORS(app)
 
+        disables = config.config.get("disable", "").split(",")
+        chatDisabled = "chat" in disables
+        summaryDisabled = "summary" in disables
+
         app.add_route(HeartbeatHandler.as_view(), app.config.basePath + '/health')
-        app.add_route(ChatHandler.as_view(), app.config.basePath + '/chat/<personaId>')
-        app.add_route(PersonaHandler.as_view(), app.config.basePath + '/persona', methods=["POST"])
-        app.add_route(PersonaHandler.as_view(), app.config.basePath + '/persona/<personaId>', methods=["DELETE", "GET"])
+
+        if chatDisabled:
+            logging.info("Chat bot disabled")
+        else:
+            app.add_route(ChatHandler.as_view(), app.config.basePath + '/chat/<personaId>')
+            app.add_route(PersonaHandler.as_view(), app.config.basePath + '/persona', methods=["POST"])
+            app.add_route(
+                PersonaHandler.as_view(), app.config.basePath + '/persona/<personaId>', methods=["DELETE", "GET"]
+            )
+
+        if summaryDisabled:
+            logging.info("Summarizer disabled")
+        else:
+            app.add_route(SummaryHandler.as_view(), app.config.basePath + '/summary', methods=["POST"])
 
         # For local debug mode (serverPort=0), just run the API.
         # Otherwise, use waitress library to snippetStart a server that listen to the port.

@@ -3,7 +3,70 @@
 This project implements a chatbot that carry on a conversation with a user.
 One can give the bot a background persona and it will assume the role and chat accordingly.
 
-## API
+## Summarizer API
+
+A complete definition of the API is in the Swagger file "[swagger.yaml](https://gitlab.com/npc-work/npc-work-research/chatbot/-/blob/main/swagger.yaml)".
+
+### A Usage Example
+
+The base path of the API depends on how the server is deployed.
+In the following examples, the base path `http://localhost:8080/tankabot` is used.
+
+#### Summarize a Text
+
+The simplest way to summarize a text is with only the "text" field in the request.
+
+```
+{
+  "text": "Tianqiao Chen\n@Vincent 朱赟  volunteer 那个功能本身可以是调性的一个重要部分\n21:15\nTianqiao Chen\n调性并不是写写画画，有的时候可以从宣传小的贴心的功能开始\n21:16\nTianqiao Chen\n比方说我们的自动翻译，强调了人和人之间交流不应该有隔阂\n21:16\nTianqiao Chen\n比方说volunteer： 善良有爱心有责任心\n21:17\nTianqiao Chen\n@Evangeline Wang 如果你要好一些功能的调性，不要上来就说这个不对要改正那个\n21:17\nTianqiao Chen\n而是实实在在的增加一些小东西\n21:18\nTianqiao Chen\n而不要急着去改变一个东西。只要改变都会涉及到历史问题\n21:19\nTianqiao Chen\n@Jonathan 比方说我的那个👍，能不能就比所有竞品大，不但体现出潮，而且体现出简单深刻里面的简单这个特点！\n21:19\nTianqiao Chen\n千言万语，一个赞就够了，这个赞岂不是位置要更大一些？\n21:20\nTianqiao Chen\n@Evangeline Wang 这就是软装，这就是调性，多去找一些这些细节不断提升，拿出一个简易表出来\n22:25\nJonathan\nTianqiao Chen\n@Jonathan 比方说我的那个👍，能不能就比所有竞品大，不但体现出潮，而且体现出简单深刻里面的简单这个特点！\n\n陈总这么一说，我有了创意，后面做成demo动效给陈总和大家看。\n22:49\nTianqiao Chen\n呵呵，以后不要等我“这么一说“\n22:50\nJonathan\n哦😄\n23:34\nEvangeline Wang\nTianqiao Chen\n@Evangeline Wang 这就是软装，这就是调性，多去找一些这些细节不断提升，拿出一个简易表出来\n\n明白，我明白陈总的意思了。我把值得优化的点逐个整理出来\n12/1/2022 7:43\nTianqiao Chen\n总结一下你想在tanka 用户里放的label，比方说乐于助人，有责任心\n7:44\nTianqiao Chen\n然后去找地方体现出来\n16:35\nEvangeline Wang\n明白"
+}
+```
+
+This will get the following response:
+
+```
+"Tianqiao Chen discussed the importance of having a good tone when developing features for Tanka. He suggested that instead of immediately changing something, small additions should be made to emphasize the connection between people, such as the automatic translation feature. He also suggested that the \"like\" feature should be larger than other competitors to emphasize its simplicity and trendiness. Finally, he suggested summarizing the labels that should be used in Tanka, such as being helpful and responsible."
+```
+
+### Specify a Language
+
+One may want to summarize in Chinese (or other languages).  To do this, one may add the "language" field.
+
+```
+{
+  "language": "zh",
+  "text": "Tianqiao Chen\n@Vincent 朱赟  volunteer 那个功能本身可以是调性的一个重要部分\n21:15\nTianqiao Chen\n调性并不是写写画画，有的时候可以从宣传小的贴心的功能开始\n21:16\nTianqiao Chen\n比方说我们的自动翻译，强调了人和人之间交流不应该有隔阂\n21:16\nTianqiao Chen\n比方说volunteer： 善良有爱心有责任心\n21:17\nTianqiao Chen\n@Evangeline Wang 如果你要好一些功能的调性，不要上来就说这个不对要改正那个\n21:17\nTianqiao Chen\n而是实实在在的增加一些小东西\n21:18\nTianqiao Chen\n而不要急着去改变一个东西。只要改变都会涉及到历史问题\n21:19\nTianqiao Chen\n@Jonathan 比方说我的那个👍，能不能就比所有竞品大，不但体现出潮，而且体现出简单深刻里面的简单这个特点！\n21:19\nTianqiao Chen\n千言万语，一个赞就够了，这个赞岂不是位置要更大一些？\n21:20\nTianqiao Chen\n@Evangeline Wang 这就是软装，这就是调性，多去找一些这些细节不断提升，拿出一个简易表出来\n22:25\nJonathan\nTianqiao Chen\n@Jonathan 比方说我的那个👍，能不能就比所有竞品大，不但体现出潮，而且体现出简单深刻里面的简单这个特点！\n\n陈总这么一说，我有了创意，后面做成demo动效给陈总和大家看。\n22:49\nTianqiao Chen\n呵呵，以后不要等我“这么一说“\n22:50\nJonathan\n哦😄\n23:34\nEvangeline Wang\nTianqiao Chen\n@Evangeline Wang 这就是软装，这就是调性，多去找一些这些细节不断提升，拿出一个简易表出来\n\n明白，我明白陈总的意思了。我把值得优化的点逐个整理出来\n12/1/2022 7:43\nTianqiao Chen\n总结一下你想在tanka 用户里放的label，比方说乐于助人，有责任心\n7:44\nTianqiao Chen\n然后去找地方体现出来\n16:35\nEvangeline Wang\n明白"
+}
+```
+
+This may get the result like this:
+
+```
+"陈天桥提出，调性不是只写写画画，而是从宣传小的贴心的功能开始，比如自动翻译，强调人与人之间交流无隔阂；比如volunteer：善良有爱心有责任心。他建议，要调性好一些功能，不要上来就说这个不对要改正那个，而是实实在在的增加一些小东西，而不要急着去改变一个东西，因为改变都会涉及到历史问题。最后，他总结了想在Tanka用户里放的label，比如乐于助人，有责任心。"
+```
+
+### Recommend some Titles
+
+One may want the bot to recommend some titles.
+This can be done with the "mode" field set to "title".
+An optional field "numTitles" can be set for number of titles generated.  The default is 3.
+
+```
+{
+  "mode": "title",
+  "numTitles": 4,
+  "language": "zh",
+  "text": "Tianqiao Chen\n@Vincent 朱赟  volunteer 那个功能本身可以是调性的一个重要部分\n21:15\nTianqiao Chen\n调性并不是写写画画，有的时候可以从宣传小的贴心的功能开始\n21:16\nTianqiao Chen\n比方说我们的自动翻译，强调了人和人之间交流不应该有隔阂\n21:16\nTianqiao Chen\n比方说volunteer： 善良有爱心有责任心\n21:17\nTianqiao Chen\n@Evangeline Wang 如果你要好一些功能的调性，不要上来就说这个不对要改正那个\n21:17\nTianqiao Chen\n而是实实在在的增加一些小东西\n21:18\nTianqiao Chen\n而不要急着去改变一个东西。只要改变都会涉及到历史问题\n21:19\nTianqiao Chen\n@Jonathan 比方说我的那个👍，能不能就比所有竞品大，不但体现出潮，而且体现出简单深刻里面的简单这个特点！\n21:19\nTianqiao Chen\n千言万语，一个赞就够了，这个赞岂不是位置要更大一些？\n21:20\nTianqiao Chen\n@Evangeline Wang 这就是软装，这就是调性，多去找一些这些细节不断提升，拿出一个简易表出来\n22:25\nJonathan\nTianqiao Chen\n@Jonathan 比方说我的那个👍，能不能就比所有竞品大，不但体现出潮，而且体现出简单深刻里面的简单这个特点！\n\n陈总这么一说，我有了创意，后面做成demo动效给陈总和大家看。\n22:49\nTianqiao Chen\n呵呵，以后不要等我“这么一说“\n22:50\nJonathan\n哦😄\n23:34\nEvangeline Wang\nTianqiao Chen\n@Evangeline Wang 这就是软装，这就是调性，多去找一些这些细节不断提升，拿出一个简易表出来\n\n明白，我明白陈总的意思了。我把值得优化的点逐个整理出来\n12/1/2022 7:43\nTianqiao Chen\n总结一下你想在tanka 用户里放的label，比方说乐于助人，有责任心\n7:44\nTianqiao Chen\n然后去找地方体现出来\n16:35\nEvangeline Wang\n明白"
+}
+```
+
+This results in:
+
+```
+"1. 调性：从小功能开始\n2. 如何改善用户体验：软装与调性\n3. 乐于助人，有责任心：Tanka用户标签\n4. 简单深刻：提升用户体验的细节"
+```
+
+## Chat Bot API
 
 ### Definition
 
@@ -12,7 +75,7 @@ A complete definition of the API is in the Swagger file "[swagger.yaml](https://
 ### A Usage Example
 
 The base path of the API depends on how the server is deployed.
-In this example, the base path `http://localhost:8080/tankabot` is used.
+In the following examples, the base path `http://localhost:8080/tankabot` is used.
 
 #### Create a Persona for the bot
 
@@ -200,7 +263,7 @@ GET  http://localhost:8080/tankabot/chat/634a383d6890320d447b9878
 If a persona is not accessed for a period, it will be automatically deleted.
 The duration is configured by the system.  The default is one day.
 
-## Dialog Editing
+## Chat Bot Dialog Editing
 
 **(This currently only works for GPT-3 model.)**
 
@@ -443,7 +506,7 @@ Utterance 16 is a single string, so it is the other speaker after utterance 15.
 Therefore, it is from Luke without needing to say so in the script.
 
 
-## Chatbot Server Deployment
+## Chat Bot Server Deployment
 
 ### Run locally
 

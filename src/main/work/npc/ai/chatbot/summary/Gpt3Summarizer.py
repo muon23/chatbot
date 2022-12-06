@@ -64,6 +64,8 @@ class Gpt3Summarizer(Summarizer):
             text += f"\n====\nRecommend {numTitles} titles for the text above{language}:\n"
         elif mode == "conclusion":
             text += f"\n====\nWhat is the conclusion of the text above{language}:\n"
+        elif mode == "todo":
+            text += f"\n===\ncreate a todo from the text above{language}:\n"
 
         return text
 

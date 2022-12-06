@@ -26,3 +26,4 @@ CMD []
 # install required packages from PyPI
 RUN pip3 install --no-cache-dir zhon==1.1.5
 RUN pip3 install --no-cache-dir sanic-cors==2.2.0
+RUN pip3 install --no-cache-dir iso-639==0.4.5

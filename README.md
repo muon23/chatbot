@@ -27,7 +27,10 @@ POST http://localhost:8080/tankabot/summary
 This will get the following response:
 
 ```
-"Tianqiao Chen discussed the importance of having a good tone when developing features for Tanka. He suggested that instead of immediately changing something, small additions should be made to emphasize the connection between people, such as the automatic translation feature. He also suggested that the \"like\" feature should be larger than other competitors to emphasize its simplicity and trendiness. Finally, he suggested summarizing the labels that should be used in Tanka, such as being helpful and responsible."
+{
+  "version": "0.4.1",
+  "summary": "Tianqiao Chen discussed the importance of tone when it comes to developing features for a product. He suggested that instead of immediately changing something, small additions can be made to emphasize the connection between people. For example, he mentioned the automatic translation feature which emphasizes that there should be no barriers between people. He also suggested that volunteer features should emphasize kindness, love, and responsibility. \n\nHe then gave an example of how to improve the tone of a feature. He suggested making the \"like\" button bigger than the competition to emphasize its simplicity and coolness. \n\nFinally, he suggested summarizing the labels that should be used in Tanka for users, such as being helpful and responsible. He then suggested finding ways to emphasize these labels."
+}
 ```
 
 ### Specify a Language
@@ -46,7 +49,11 @@ POST http://localhost:8080/tankabot/summary
 This may get the result like this:
 
 ```
-"陈天桥提出，调性不是只写写画画，而是从宣传小的贴心的功能开始，比如自动翻译，强调人与人之间交流无隔阂；比如volunteer：善良有爱心有责任心。他建议，要调性好一些功能，不要上来就说这个不对要改正那个，而是实实在在的增加一些小东西，而不要急着去改变一个东西，因为改变都会涉及到历史问题。最后，他总结了想在Tanka用户里放的label，比如乐于助人，有责任心。"
+{
+  "version": "0.4.1",
+  "summary": "陈天桥在讨论如何调性的时候，提出了一些有用的建议。他建议不要急着去改变一个东西，而是实实在在的增加一些小东西，比如自动翻译，强调人与人之间的交流不应该有隔阂。此外，他还提到了volunteer，善良有爱心有责任心，这也是一种调性。\n\n他还提到了一个具体的例子，就是👍，能不能就比所有竞品大，不但体现出潮，而且体现出简单深刻里面的简单这个特点！最后，他总结了一下想要在tanka用户里放的label，比如乐于助人，有责任心等等。",
+  "language": "zh"
+}
 ```
 
 ### Recommend some Titles
@@ -69,7 +76,32 @@ POST http://localhost:8080/tankabot/summary
 This results in:
 
 ```
-"1. 调性：从小功能开始\n2. 如何改善用户体验：软装与调性\n3. 乐于助人，有责任心：Tanka用户标签\n4. 简单深刻：提升用户体验的细节"
+{
+  "version": "0.4.1",
+  "title": "1. 调性：从小功能开始\n2. 如何改善用户体验：软装的重要性\n3. 乐于助人，有责任心：Tanka用户的标签\n4. 简单深刻：如何改变一个功能",
+  "language": "zh"
+}
+```
+
+### Create a Reminder
+```
+POST http://localhost:8080/tankabot/summary
+
+{
+  "language": "en",
+  "mode": "reminder",
+  "text": "gong: 华哥，关于获取数据的事情，和相关人沟通了下时间，定于今天下午5点左右讨论下，不知道这个时间点对你这边是否合适？ Hua Zhang: 我有空的 gong: 好的 华哥，花花现在还在面试，大概还需要10分钟左右，5点我们是先讨论还是等花花结束后一起 Hua Zhang: 等一下他吧 gong: 好的"
+}
+```
+
+A possible result:
+
+```
+{
+  "version": "0.4.1",
+  "reminder": "Reminder: Discuss data acquisition at 5 pm today.",
+  "language": "en"
+}
 ```
 
 ### Runtime Errors

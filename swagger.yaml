@@ -31,8 +31,8 @@ paths:
               properties:
                 mode:
                   type: string
-                  enum: [summary, digest, title, conclusion]
-                  description: Mode of summarization. One of
+                  enum: [summary, digest, title, conclusion, actions, remider]
+                  description: Mode of summarization.  See the decription of the responded results.
                   required: false
                   default: summary
                   example: summary
@@ -57,9 +57,42 @@ paths:
           content:
             application/json:
               schema:
-                type: string
-                description: Summary of the text
-                example: "Tianqiao Chen suggested that when it comes to adjusting the tone of a feature, it is better to start with small and thoughtful functions rather than immediately changing something. He gave an example of automatic translation, emphasizing that communication between people should not have any barriers. He also suggested that volunteer should be associated with kindness, love, and responsibility. He further suggested that when improving a feature, one should focus on adding small details instead of making drastic changes. Lastly, he concluded by suggesting to summarize the labels that should be placed in the Tanka user, such as being helpful and responsible."
+                type: object
+                required: [ version ]
+                properties:
+                  vesion:
+                    type: string
+                    description: Server version
+                    example: "0.1.0"
+                  language:
+                    type: string
+                    description: Language specified
+                    example: "en"
+                  summary:
+                    type: string
+                    description: Results from summarization of the text
+                    example: "Tianqiao Chen discussed the importance of tone when it comes to developing features for a product. He suggested that instead of immediately changing something, small additions can be made to emphasize the connection between people. For example, he suggested adding an automatic translation feature to emphasize that communication should not have any barriers. He also suggested emphasizing qualities such as kindness, love, and responsibility when it comes to volunteer features. \n\nHe then gave an example of how to improve the tone of a feature, suggesting that the \"like\" button should be bigger than the competition to emphasize its simplicity. He concluded by suggesting that users should think about the labels they want to put in Tanka, such as being helpful and responsible, and then find ways to emphasize those qualities."
+                  digest:
+                    type: string
+                    description: Same as summary mode, but with the speaker information removed
+                    example: "Tianqiao Chen discussed the importance of adjusting the tone of a feature when it comes to user experience. He suggested that instead of immediately changing something, small additions can be made to emphasize the connection between people. For example, he mentioned the automatic translation feature which emphasizes the lack of barriers between people. He also suggested that volunteer features should emphasize kindness, love, and responsibility. \n\nHe then gave an example of how to adjust the tone of a feature. He suggested making the \"like\" button bigger than the competition to emphasize its simplicity. This is an example of \"soft decoration\" and adjusting the tone. He then concluded by suggesting that users should compile a list of points that need to be optimized."
+                  title:
+                    type: string
+                    description: Create some title recommendations
+                    example: "1. 调性：从小功能开始\n2. 如何改善用户体验：软装的重要性\n3. 乐于助人，有责任心：Tanka用户的标签\n4. 简单深刻：如何改变一个功能"
+                  conclusion:
+                    type: string
+                    description: Show the conclusion from the text
+                    example: "The conclusion of the text above is that Tianqiao Chen suggested that in order to improve the tone of a feature, it is better to add small details rather than making drastic changes. He also suggested summarizing the labels that should be included in Tanka's user base, such as being helpful and responsible."
+                  actions:
+                    type: string
+                    description: Create a list of action items
+                    example: "1. Emphasize the importance of small, thoughtful features in improving the tone of a product.\n2. Utilize automatic translation to emphasize communication between people without barriers.\n3. Promote volunteerism by emphasizing kindness, love, and responsibility."
+                  reminder:
+                    type: string
+                    description: Create a reminder
+                    example: "Reminder: Discuss data acquisition at 5 pm today."
+
         400:
           description: The request failed and this is the error messages
           content:

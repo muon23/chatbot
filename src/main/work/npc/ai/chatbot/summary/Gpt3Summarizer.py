@@ -13,8 +13,8 @@ from work.npc.ai.chatbot.summary.Summarizer import Summarizer
 class Gpt3Summarizer(Summarizer):
     completion = None
 
-    DEFAULT_TOKEN_LIMIT = 3000
-    DEFAULT_TEMPERATURE = 0.2
+    DEFAULT_TOKEN_LIMIT = 1000
+    DEFAULT_TEMPERATURE = 0.1
 
     @classmethod
     def of(cls, model: str) -> Summarizer:
@@ -57,13 +57,17 @@ class Gpt3Summarizer(Summarizer):
             language = f" using {languageName}"
 
         if mode == "summary":
-            text += f"\n====\nSummarize the text above{language}:\n"
+            text += f"\n====\nSummarize the text above{language}, separating key points into paragraphs:\n"
         elif mode == "digest":
-            text += f"\n====\nDigest the text above{language}:\n"
+            text += f"\n====\nDigest the text above{language}, separating key points into paragraphs:\n"
         elif mode == "title":
             text += f"\n====\nRecommend {numTitles} titles for the text above{language}:\n"
         elif mode == "conclusion":
             text += f"\n====\nWhat is the conclusion of the text above{language}:\n"
+        elif mode == "actions":
+            text += f"\n====\nList the action items from the text above{language}:\n"
+        elif mode == "reminder":
+            text += f"\n====\nSet a reminder from the text above{language} with the time of the event:\n"
 
         return text
 
@@ -85,7 +89,6 @@ class Gpt3Summarizer(Summarizer):
                 response = self.completion.create(
                     prompt=prompt,
                     engine="text-davinci-003",
-                    # engine="davinci",
                     stop=None,
                     temperature=self.DEFAULT_TEMPERATURE,
                     top_p=1,
@@ -100,6 +103,7 @@ class Gpt3Summarizer(Summarizer):
             except (
                     openai.error.APIConnectionError,
                     openai.error.RateLimitError,
+                    openai.error.ServiceUnavailableError,
                     AttributeError
             ) as e:
                 tries += 1

@@ -1,7 +1,7 @@
 FROM debian:buster-slim
 
 # Environment variables
-ENV CHATBOT_BASE_PATH=/tankasbot
+ENV CHATBOT_BASE_PATH=/tankabot
 ENV CHATBOT_SERVER_PORT=8080
 
 ENV CHATBOT_PROJECT_ROOT="/app/chatbot"

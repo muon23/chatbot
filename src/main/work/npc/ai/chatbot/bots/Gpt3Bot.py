@@ -337,6 +337,7 @@ class Gpt3Bot(Bot):
                 except (
                     openai.error.APIConnectionError,
                     openai.error.RateLimitError,
+                    openai.error.ServiceUnavailableError,
                     AttributeError
                 ) as e:
                     tries += 1

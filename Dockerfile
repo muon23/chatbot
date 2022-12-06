@@ -1,7 +1,7 @@
 FROM 587070264874.dkr.ecr.us-west-2.amazonaws.com/base-tanka-chatbot:v1.0.0
 
 # Environment variables
-ENV CHATBOT_BASE_PATH=/tankasbot
+ENV CHATBOT_BASE_PATH=/tankabot
 ENV CHATBOT_SERVER_PORT=8080
 ENV CHATBOT_PROJECT_ROOT="/app/chatbot"
 ENV COMMONS_PROJECT_ROOT="/app/commons"

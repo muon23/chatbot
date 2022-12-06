@@ -1,6 +1,6 @@
 import logging
 
-from sanic import json
+from sanic import json, Sanic
 from sanic.views import HTTPMethodView
 
 from work.npc.ai.chatbot.summary.Gpt3Summarizer import Gpt3Summarizer
@@ -23,6 +23,8 @@ class SummaryHandler(HTTPMethodView):
         numTitles = payload.get("numTitles", 3)
         language = payload.get("language", None)
 
+        sanic = Sanic.get_app()
+
         try:
             summarizer = (
                 Gpt3Summarizer.of(model)
@@ -30,7 +32,16 @@ class SummaryHandler(HTTPMethodView):
             if summarizer is None:
                 return self.error(f"Unknown chat bot model {model}")
 
-            response = summarizer.summarize(text, mode=mode, numTitles=numTitles, language=language)
+            summary = summarizer.summarize(text, mode=mode, numTitles=numTitles, language=language)
+
+            response = {
+                "version": sanic.config.VERSION,
+                mode: summary,
+            }
+
+            if language:
+                response["language"] = language
+
             logging.info(response)
 
         except RuntimeError as e:

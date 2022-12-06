@@ -66,6 +66,8 @@ class Gpt3Summarizer(Summarizer):
             text += f"\n====\nWhat is the conclusion of the text above{language}:\n"
         elif mode == "actions":
             text += f"\n====\nList the action items from the text above{language}:\n"
+        elif mode == "todo":
+            text += f"\n===\ncreate a todo from the text above{language}:\n"
         elif mode == "reminder":
             text += f"\n====\nSet a reminder from the text above{language} with the time of the event:\n"
 

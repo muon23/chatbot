@@ -2,12 +2,13 @@ import difflib
 import logging
 import os
 import re
-import time
 from typing import Iterator, Tuple, List, Optional, Set, Union
 
 import openai
 
 from work.npc.ai.chatbot.bots.Bot import Bot
+from work.npc.ai.chatbot.summary.Gpt3Summarizer import Gpt3Summarizer
+from work.npc.ai.utilities.Gpt3Portal import Gpt3Portal
 from work.npc.ai.utilities.Languages import Languages
 
 
@@ -16,6 +17,17 @@ class Gpt3Utterance:
         self.speaker = speaker
         self.utterance = utterance
         self.hidden = False
+
+
+class Gpt3Summary:
+    __summarizer = None
+
+    def __init__(self, utterances: List[Gpt3Utterance]):
+        if not self.__summarizer:
+            self.__summarizer = Gpt3Summarizer()
+
+        text = "\n".join([f"{u.speaker}: {u.utterance}" for u in utterances if not u.hidden])
+        self.summary = self.__summarizer.summarize(text, mode="story")
 
 
 class Gpt3Conversation:
@@ -196,9 +208,10 @@ class Gpt3Conversation:
 
 
 class Gpt3Bot(Bot):
-    completion = None
+    __portal: Gpt3Portal = None
 
     __DEFAULT_UTTERANCE_LIMIT = 30
+    __DEFAULT_TEMPERATURE = 0.9
 
     @classmethod
     def of(
@@ -211,16 +224,12 @@ class Gpt3Bot(Bot):
         return Gpt3Bot(persona, name, utteranceLimit) if modelName.lower() == "gpt3" else None
 
     def __init__(self, persona: List[str] = None, name: str = "Bot", utteranceLimit: int = __DEFAULT_UTTERANCE_LIMIT):
-        if not self.completion:
+        if not self.__portal:
             accessKey = os.environ.get("OPENAI_KEY")
             if not accessKey:
                 raise RuntimeError("Environment OPENAI_KEY not defined")
 
-            try:
-                openai.api_key = accessKey
-                self.completion = openai.Completion()
-            except Exception as e:
-                raise RuntimeError(f"Cannot access GPT-3. {str(e)}")
+            self.__portal = Gpt3Portal.of(accessKey)
 
         self.conversation = Gpt3Conversation(name, persona, utteranceLimit)
         self.tokenLimit = 200
@@ -285,7 +294,7 @@ class Gpt3Bot(Bot):
         self.conversation.promptMoreUtterances()
         return spoken, replies
 
-    def respondTo(self, utterance: str, **kwargs) -> Tuple[Optional[str], Optional[str]]:
+    async def respondTo(self, utterance: str, **kwargs) -> Optional[str]:
         debug = kwargs.get("debug", False)
 
         speakers = kwargs.get("next", set())
@@ -307,44 +316,27 @@ class Gpt3Bot(Bot):
             print(prompt) if debug else None
 
             response = None
-            tries = 0
             tokenLimit = self.tokenLimit
             while not response:
                 try:
-                    response = self.completion.create(
+                    response = await self.__portal.complete(
                         prompt=prompt,
-                        engine="text-davinci-003",
+                        retries=5,
                         stop=f"{self.conversation.me}: ",
-                        temperature=0.7,
-                        top_p=1,
-                        frequency_penalty=0,
-                        presence_penalty=0.6,
-                        best_of=1,
+                        temperature=self.__DEFAULT_TEMPERATURE,
                         max_tokens=tokenLimit
                     )
-                    response = response.choices[0].text.strip()
+
+                    response = response[0]
                     logging.info(f">>>> OpenAI response:\n{response}")
 
                     spoken, lines = self.processResponse(response, nextSpeaker)
-                    print(f">>>> {str(spoken)} {str(lines)}") if debug else None
                     if lines:
                         replies += lines
                         speakers.difference_update(spoken)
                     else:
                         response = None
                         continue
-
-                except (
-                    openai.error.APIConnectionError,
-                    openai.error.RateLimitError,
-                    openai.error.ServiceUnavailableError,
-                    AttributeError
-                ) as e:
-                    tries += 1
-                    if tries > 5:
-                        return None, f"GPT-3 access failed after {tries} tries.  Please try later"
-                    logging.warning(f"GPT-3 access failure: {str(e)} {tries}")
-                    time.sleep(1)
 
                 except openai.error.InvalidRequestError as e:
                     if tokenLimit <= 900:
@@ -357,9 +349,9 @@ class Gpt3Bot(Bot):
                         errorMsg = f"Minimum utterances {self.conversation.currentUtteranceLimit} "
                         "and maximum tokens {tokenLimit}, Use shorter utterances."
                         logging.warning(errorMsg)
-                        return None, errorMsg
+                        raise RuntimeError(errorMsg)
 
-        return "\n".join(replies), None
+        return "\n".join(replies)
 
     def getConversation(self) -> Iterator[Tuple[Union[bool, str], str]]:
         for c in self.conversation.conversation:

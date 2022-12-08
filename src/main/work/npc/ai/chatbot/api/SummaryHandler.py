@@ -32,7 +32,7 @@ class SummaryHandler(HTTPMethodView):
             if summarizer is None:
                 return self.error(f"Unknown chat bot model {model}")
 
-            summary = summarizer.summarize(text, mode=mode, numTitles=numTitles, language=language)
+            summary = await summarizer.summarize(text, mode=mode, numTitles=numTitles, language=language)
 
             response = {
                 "version": sanic.config.VERSION,

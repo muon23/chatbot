@@ -35,13 +35,14 @@ class ChatHandler(HTTPMethodView):
         }
 
         if utterance:
-            reply, error = persona.bot.respondTo(utterance, debug=sanic.config.get("debug", None))
-            if not reply:
-                return self.error(error, 503)
+            try:
+                reply = await persona.bot.respondTo(utterance, debug=sanic.config.get("debug", None))
+            except RuntimeError as e:
+                return self.error(str(e), 503)
+
             response["reply"] = reply
 
         logging.info(response)
-
         return json(response, status=200, content_type='application/json')
 
     async def get(self, request, personaId):

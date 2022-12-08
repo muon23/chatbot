@@ -1,36 +1,62 @@
 import logging
 import os
 import re
-import time
 from typing import Optional
-from iso639 import languages
 
 import openai
+from iso639 import languages
 
 from work.npc.ai.chatbot.summary.Summarizer import Summarizer
+from work.npc.ai.utilities.Gpt3Portal import Gpt3Portal
 
 
 class Gpt3Summarizer(Summarizer):
-    completion = None
+    __portal: Gpt3Portal = None
 
-    DEFAULT_TOKEN_LIMIT = 1000
-    DEFAULT_TEMPERATURE = 0.1
+    __DEFAULT_TOKEN_LIMIT = 1000
+    __DEFAULT_TEMPERATURE = 0.1
+
+    __PROMPT = {
+        "summary": "\n====\nSummarize the text above{language}, separating key points into paragraphs:\n",
+        "digest": "\n====\nDigest the text above{language}, separating key points into paragraphs:\n",
+        "title": "\n====\nRecommend {numTitles} titles for the text above{language}:\n",
+        "conclusion": "\n====\nWhat is the conclusion of the text above{language}:\n",
+        "actions": "\n====\nList the action items from the text above{language}:\n",
+        "todo": "\n====\ncreate a todo from the text above{language}:\n",
+        "reminder": "\n====\nSet a reminder from the text above{language} with the time of the event:\n",
+        "story": "\n====\nSummarize the section of a story above:\n",
+    }
 
     @classmethod
     def of(cls, model: str) -> Summarizer:
         return Gpt3Summarizer() if model == "gpt3" else None
 
     def __init__(self):
-        if not self.completion:
+
+        if not self.__portal:
             accessKey = os.environ.get("OPENAI_KEY")
             if not accessKey:
                 raise RuntimeError("Environment OPENAI_KEY not defined")
 
+            self.__portal = Gpt3Portal.of(accessKey)
+
+    @classmethod
+    def __getPrompt(cls, mode, languageCode, numTitle) -> str:
+        if languageCode:
             try:
-                openai.api_key = accessKey
-                self.completion = openai.Completion()
-            except Exception as e:
-                raise RuntimeError(f"Cannot access GPT-3. {str(e)}")
+                languageName = languages.get(alpha2=languageCode).name
+            except KeyError:
+                raise RuntimeError(f"Invalid language code '{languageCode}'")
+
+            language = f" using {languageName}"
+        else:
+            language = ""
+
+        prompt = cls.__PROMPT.get(mode, None)
+        if not prompt:
+            raise RuntimeError(f"Mode {mode} not supported")
+
+        return prompt.format(language=language, numTitle=numTitle)
 
     @classmethod
     def __cleanUpText(cls, text: str, mode: str, numTitles: int, language: Optional[str]) -> str:
@@ -46,34 +72,11 @@ class Gpt3Summarizer(Summarizer):
         lines = [s for s in lines if not re.match(r"\d{2}:\d{2}$", s)]
 
         # Put back text
-        text = os.linesep.join([s for s in lines if s])
-
-        if language:
-            try:
-                languageName = languages.get(alpha2=language).name
-            except KeyError:
-                raise RuntimeError(f"Invalid language code '{language}'")
-
-            language = f" using {languageName}"
-
-        if mode == "summary":
-            text += f"\n====\nSummarize the text above{language}, separating key points into paragraphs:\n"
-        elif mode == "digest":
-            text += f"\n====\nDigest the text above{language}, separating key points into paragraphs:\n"
-        elif mode == "title":
-            text += f"\n====\nRecommend {numTitles} titles for the text above{language}:\n"
-        elif mode == "conclusion":
-            text += f"\n====\nWhat is the conclusion of the text above{language}:\n"
-        elif mode == "actions":
-            text += f"\n====\nList the action items from the text above{language}:\n"
-        elif mode == "todo":
-            text += f"\n===\ncreate a todo from the text above{language}:\n"
-        elif mode == "reminder":
-            text += f"\n====\nSet a reminder from the text above{language} with the time of the event:\n"
+        text = os.linesep.join([s for s in lines if s]) + cls.__getPrompt(mode, language, numTitles)
 
         return text
 
-    def summarize(self, text: str, **kwargs) -> str:
+    async def summarize(self, text: str, **kwargs) -> str:
         if not text:
             return ""
 
@@ -83,39 +86,19 @@ class Gpt3Summarizer(Summarizer):
 
         prompt = self.__cleanUpText(text, mode, numTitles, language)
         logging.info(f"Prompt = \n{prompt}")
-        response = None
 
-        tries = 0
-        while not response:
-            try:
-                response = self.completion.create(
-                    prompt=prompt,
-                    engine="text-davinci-003",
-                    stop=None,
-                    temperature=self.DEFAULT_TEMPERATURE,
-                    top_p=1,
-                    frequency_penalty=0,
-                    presence_penalty=0.6,
-                    best_of=1,
-                    max_tokens=self.DEFAULT_TOKEN_LIMIT
-                )
-                response = response.choices[0].text.strip()
-                logging.info(f">>>> OpenAI response:\n{response}")
+        try:
+            response = await self.__portal.complete(
+                prompt=prompt,
+                retries=5,
+                temperature=self.__DEFAULT_TEMPERATURE,
+                max_tokens=self.__DEFAULT_TOKEN_LIMIT
+            )
 
-            except (
-                    openai.error.APIConnectionError,
-                    openai.error.RateLimitError,
-                    openai.error.ServiceUnavailableError,
-                    AttributeError
-            ) as e:
-                tries += 1
-                if tries > 5:
-                    raise RuntimeError(f"GPT-3 access failed after {tries} tries.  Please try later.")
+            response = response[0]
+            logging.info(f">>>> OpenAI response:\n{response}")
 
-                logging.warning(f"GPT-3 access failure: {str(e)} {tries}")
-                time.sleep(1)
-
-            except openai.error.InvalidRequestError as e:
-                raise RuntimeError(f"Content exceeds max number of words.  Please split into shorter contents.")
+        except openai.error.InvalidRequestError as e:
+            raise RuntimeError(f"Content exceeds max number of words.  Please split into shorter contents.")
 
         return response

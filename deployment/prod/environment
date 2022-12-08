@@ -4,3 +4,11 @@
 #export CHATBOT_PERSONA_EXPIRATION=1d
 export OPENAI_KEY=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
 #export CHATBOT_DISABLE=chat
+# Apollo config
+export APP_ID=tanka-chatbot
+export CONFIG_SERVER_URL=
+export AUTHORIZATION=
+export CACHE_FILE_PATH=./cache_file
+export ENV=PROD
+export NAMESPACE=ai.tanka.chatbot
+export OPENAI_KEY=openai_key

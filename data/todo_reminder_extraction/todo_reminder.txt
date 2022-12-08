@@ -1,0 +1,270 @@
+1 文本:
+王林青:
+
+@duan Yongjian @Vincent 朱赟 请问下，15:00~17:00哪个时间段有空参加用例评审？
+
+
+duan Yongjian:
+
+就现在吧
+
+
+Vincent 朱赟:
+
+现在吧
+
+
+王林青:
+
+好的  大会议室 首先评审contact老用户流程这个需求用例 ，请相关开发先参加吧
+
+
+2,文本
+duan Yongjian:
+@kai Wang 由于今天产品几位同事参加JIRA项目培训，10:00的Zoom的早会请帮忙主持一下。对一下12/8版本进度（原计划今天下班全部提测），另外：”排序搜索优化“这个需求也请尽早提测。
+
+3,文本
+duan Yongjian:
+@许美镇 @kai Wang 根据华哥的要求，将【语音发送交互调整】需求放到了V1.10(12/8）版本里了，需求已经同步。工单已经创建给到两位了，明天可以沟通需求。
+
+4,文本
+duan Yongjian:
+@All 由于明天发版日，先集中精力进行Bugfix。将原计划明天的需求评审推迟到下周一（11/28）上午10:00进行。主要评审内容如下：
+
+1. V1.10 _ Contacts流程优化 + 应用（QuickNote、To-do）的Shared with Me清单增加Go to Source功能）：https://npcwork.atlassian.net/browse/TANIOS-3911
+
+2. V1.11_ 增加Tanka Team频道 + Chat C “大加号”改造 + 文件发送优化 ： https://npcwork.atlassian.net/browse/TANIOS-3912
+
+大家抽空可以先看一下，下周一评审时效率会更高一些。谢谢！
+
+5,文本
+gong shaojie:
+
+华哥，关于获取数据的事情，和相关人沟通了下时间，定于今天下午5点左右讨论下，不知道这个时间点对你这边是否合适？
+
+
+Hua Zhang:
+
+我有空的
+
+
+gong shaojie:
+
+好的 华哥，花花现在还在面试，大概还需要10分钟左右，5点我们是先讨论还是等花花结束后一起
+
+
+Hua Zhang:
+
+等一下他吧
+
+
+gong shaojie:
+
+好的
+
+6,文本
+Hua Zhang:
+@duan Yongjian @Wu Huazheng 后天一起讨论下搜索功能优化，你们有空吗？
+
+duan Yongjian:
+下午三点可以吗：
+
+Wu Huazheng:
+我三点在面试，晚15分钟可以吗？
+
+Hua Zhang:
+可以
+
+duan Yongjian:
+没问题
+
+7，文本
+Tianqiao Chen:
+
+一、1/2 搜索类 二、3 通讯录类 三、4/5/6/7 /8/拾遗补缺类（增加flag功能调整） 四、11语聊类 五、12/13/15/16调性类（引导帮助类）增加“聊天机器人） 六、14/17运营类（增加十大问题处理流程） 9/10/14优先级降低类
+
+一二三四我们都有明确的讨论，你们就尽快排入开发，会上不用过了，周二晚上的会重点讨论五六，五由@Vincent 朱赟 @Evangeline Wang @Jonathan 汇报，你们准备好，六就是运营会议内容
+
+会议到六点半也就是你们的十点半周三
+
+8，文本
+gong shaojie:
+
+好的，还有就是通知时不时的每天晚上12点55分给我发消息，但是好像没人修改
+
+
+Wu,Hua-Zheng:
+
+应该是应用的提醒，别人分享到所在群
+
+
+gong shaojie:
+
+ 是这个待办，最近一次通知消息是今天凌晨零点55分
+
+
+Wu,Hua-Zheng:
+
+好的，这里的逻辑比较复杂。比较显性的是你可以看到，还有一些是没有通知，但是找不到
+
+
+gong shaojie:
+
+好的
+
+9，文本
+duan Yongjian:
+明天上午10点早会给大家主要同步两件事：10/11版本复盘，11/1版本新增的几个小需求及其内容同步
+
+10，文本
+gong shaojie: 
+丽君，今天你这边什么时候有空？CJ博士需要找你讨论下智能生成文章的需求
+
+Lijun Zhao: 
+我今天没有空
+ 
+在准备给陈总汇报的方案
+
+gong shaojie: 
+好的，那明天应该也没空吧，我给CJ博士说下，等你有空的时候再约
+
+Lijun Zhao: 
+好的
+
+gong shaojie: 
+丽君今天能抽出20分钟左右的时间吗？只要不是太晚，CJ博士那边都可以
+
+Lijun Zhao: 
+要不明天下午？
+ 
+我今天是真的很忙
+
+gong shaojie: 
+可以的，那就明天下午
+
+11，文本
+gong shaojie:
+
+花花，问下，图片视频搜索，后端对接一天能完成吗
+
+
+Wu,Hua-Zheng:
+
+差不多的 如果包含前端不太确定了
+
+
+gong shaojie:
+
+计划在下周一(9月26)号对接可以吗？时间可能会有变动，主要看陈总那边有什么新的指示，优先满足陈总的需求
+
+
+Wu,Hua-Zheng:
+
+推迟到28吧
+
+
+gong shaojie:
+
+可以的
+
+
+Wu,Hua-Zheng:
+
+好的，那我们暂定28号联调，国庆后11号左右可以一起上线
+
+
+gong shaojie:
+
+28号应该不是上线，主要是联调下，刚刚早会不是说国庆后上线吗
+
+
+Wu,Hua-Zheng:
+
+gong shaojie
+
+28号应该不是上线，主要是联调下，刚刚早会不是说国庆后上线吗
+
+是的，我表述错误了，28联调
+
+
+
+gong shaojie:
+
+好的
+
+
+12，文本
+gong shaojie:
+
+花花，两点有空吗
+
+
+Wu,Hua-Zheng:
+
+有的 可以提前吗？
+
+
+gong shaojie:
+
+提前到什么时候
+
+
+Wu,Hua-Zheng:
+
+我们需要大概讨论多久？ 如果一个小时可以结束，就不需要 我三点钟有个面试
+
+
+gong shaojie:
+
+估计很快，20到30分钟应该就可以
+
+
+Wu,Hua-Zheng:
+
+那就不需要了🤝
+
+
+gong shaojie:
+
+好的
+
+
+13，文本
+gong shaojie:
+
+花花，bot新版本今天能发uat吗？按照昨天的讨论，返回结果有改动
+
+
+Wu,Hua-Zheng:
+
+好的，下周二部署
+
+
+gong shaojie:
+
+好的
+
+14，文本
+duan Yongjian:
+
+已验证，暂无发现问题。
+
+
+gong shaojie:
+
+是否可以发到生产
+
+
+duan Yongjian:
+
+可以的，不过不用那么着急，她们还在UAT测试中，下周四才上线
+
+
+gong shaojie:
+
+好的，那下周四同步上线，你看可以吗
+
+
+duan Yongjian:
+
+可以

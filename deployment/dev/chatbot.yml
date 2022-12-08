@@ -1,0 +1,7 @@
+basePath: ${CHATBOT_BASE_PATH:/tankabot}
+serverPort: ${CHATBOT_SERVER_PORT:8080}
+botModel: ${CHATBOT_BOT_MODEL:bb2-1B}
+personaExpiration: ${CHATBOT_PERSONA_EXPIRATION:1d}
+gpt3Limit: ${CHATBOT_GPT3_LIMIT:50}
+debug: ${CHATBOT_DEBUG:0}
+disable: ${CHATBOT_DISABLE:}

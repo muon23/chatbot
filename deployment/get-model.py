@@ -34,5 +34,6 @@ if modelName in transformer_models:
 if modelName in parlai_models:
     agent = create_agent_from_model_file(modelName)
 
-tokenizer = GPT2TokenizerFast.from_pretrained("gpt2")
-tokenizer("use this to download models")
+if modelName == "gpt2tokenizer":
+    tokenizer = GPT2TokenizerFast.from_pretrained("gpt2")
+    print(tokenizer("use this to download models")["input_ids"])

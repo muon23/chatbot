@@ -4,11 +4,4 @@
 #export CHATBOT_PERSONA_EXPIRATION=1d
 export CHATBOT_DEBUG=1
 #export CHATBOT_DISABLE=chat
-# Apollo config
-export APP_ID=tanka-chatbot
-export CONFIG_SERVER_URL=http://10.88.17.136:8090
-export AUTHORIZATION=13767ffb6d534759a88e8c6a9d839ffb
-export CACHE_FILE_PATH=./cache_file
-export ENV=DEV
-export NAMESPACE=ai.tanka.chatbot
-export OPENAI_KEY=openai_key
+export TOKENIZERS_PARALLELISM=true

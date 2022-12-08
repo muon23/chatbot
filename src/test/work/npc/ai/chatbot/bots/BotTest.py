@@ -87,15 +87,22 @@ April: I am April.  I am the most happy girl on the planet."""
         spoken, result = bot.processResponse(testStr, "April")
         print(spoken, result)
 
-    def test_trouble(self):
-        bot = Gpt3Bot()
-        testStr = """I am so sorry, Mike.  I did not know they were spying on us.
-Cindy:  It is OK.  We love April and Mike, too.  And we are happy that you have accepted us as part of the family.  April, would you like to be a centaur?
-April:  I don't think I am comfortable with that.  I like to be a fox girl.  Um...  I am not sure about this.
-"""
-        spoken, result = bot.processResponse(testStr, "April")
-        print(result)
-        print(spoken)
+    def test_ai9_chinese(self):
+        async def test():
+            bot = Gpt3Bot(
+                persona=[
+                    "我喜欢听你分享一天发生的事情",
+                    "我很快乐，说话很温柔",
+                    "我对你很好奇，喜欢问你问题",
+                    "我参加过乘风破浪的姐姐3"
+                ],
+                name="王心凌"
+            )
+
+            response = await bot.respondTo("你好")
+            print(response)
+
+        asyncio.run(test())
 
     def test_gpt3_modifyConversation(self):
         bot = Gpt3Bot()

@@ -3,6 +3,8 @@
 #export CHATBOT_BOT_MODEL=bb2-1B
 #export CHATBOT_PERSONA_EXPIRATION=1d
 export CHATBOT_DISABLE=chat
+export TOKENIZERS_PARALLELISM=true
+
 # Apollo config
 export APP_ID=tanka-chatbot
 export CONFIG_SERVER_URL=http://10.88.17.136:8092

@@ -2,7 +2,7 @@ import difflib
 import logging
 import os
 import re
-from typing import Iterator, Tuple, List, Optional, Set, Union
+from typing import Iterator, Tuple, List, Optional, Set
 
 import openai
 
@@ -34,6 +34,19 @@ class Gpt3Conversation:
 
     MIN_UTTERANCES = 6
     NARRATION = "NARRATION"
+
+    def __init__(self, name: str, persona: List[str], utteranceLimit: int):
+        self.name = name
+        self.persona = "  ".join([self.__changeSubject(fact, name) for fact in persona]) if persona else []
+        self.conversation: List[Gpt3Utterance] = []
+        self.summaries: List[Gpt3Summary] = []
+        self.utteranceLimit = utteranceLimit
+        self.currentUtteranceLimit = utteranceLimit
+
+        self.me = "我" if any([Languages.isIdeography(c) for c in self.name]) else "Me"
+
+        logging.info(f"Persona: {self.persona}")
+        logging.info(f"Utterance limit: {self.utteranceLimit}")
 
     @classmethod
     def __changeSubject(cls, fact, name):
@@ -68,18 +81,6 @@ class Gpt3Conversation:
 
         return fact
 
-    def __init__(self, name: str, persona: List[str], utteranceLimit: int):
-        self.name = name
-        self.persona = "  ".join([self.__changeSubject(fact, name) for fact in persona]) if persona else []
-        self.conversation: List[Gpt3Utterance] = []
-        self.utteranceLimit = utteranceLimit
-        self.currentUtteranceLimit = utteranceLimit
-
-        self.me = "我" if any([Languages.isIdeography(c) for c in self.name]) else "Me"
-
-        logging.info(f"Persona: {self.persona}")
-        logging.info(f"Utterance limit: {self.utteranceLimit}")
-
     def addUtterance(self, utterance: str, speaker: Optional[str] = None):
         if speaker is None:
             speaker = self.nextSpeaker()
@@ -95,6 +96,12 @@ class Gpt3Conversation:
             if m:
                 speaker = "Me" if m.group(3) == "You" else m.group(3)
                 self.addUtterance(m.group(4), speaker=speaker)
+                continue
+
+            m = re.match(r"\s*((\d+).)?\s*\(\s*(.+)\s*\)", utterance)
+            if m:
+                self.addUtterance(m.group(3), speaker=self.NARRATION)
+                continue
 
     def removeAi(self):
         self.conversation = [c for i, c in enumerate(self.conversation) if c.speaker == self.me]
@@ -135,7 +142,7 @@ class Gpt3Conversation:
 
     def hideAi(self):
         for c in self.conversation:
-            if c.speaker != self.me:
+            if c.speaker != self.me and c.speaker != self.NARRATION:
                 c.hidden = True
 
     def replace(self, utterance: str, idx: int = None):
@@ -224,6 +231,8 @@ class Gpt3Bot(Bot):
         return Gpt3Bot(persona, name, utteranceLimit) if modelName.lower() == "gpt3" else None
 
     def __init__(self, persona: List[str] = None, name: str = "Bot", utteranceLimit: int = __DEFAULT_UTTERANCE_LIMIT):
+        super().__init__(name)
+
         if not self.__portal:
             accessKey = os.environ.get("OPENAI_KEY")
             if not accessKey:
@@ -231,7 +240,7 @@ class Gpt3Bot(Bot):
 
             self.__portal = Gpt3Portal.of(accessKey)
 
-        self.conversation = Gpt3Conversation(name, persona, utteranceLimit)
+        self.conversation = Gpt3Conversation(self.name, persona, utteranceLimit)
         self.tokenLimit = 200
 
     def parseUtterance(self, utterance: str) -> Tuple[Optional[str], Optional[str]]:
@@ -353,10 +362,13 @@ class Gpt3Bot(Bot):
 
         return "\n".join(replies)
 
-    def getConversation(self) -> Iterator[Tuple[Union[bool, str], str]]:
+    def getConversation(self) -> Iterator[str]:
         for c in self.conversation.conversation:
             speaker = "You" if c.speaker == self.conversation.me else c.speaker
-            yield speaker, f"{c.utterance}{' (hidden)' if c.hidden else ''}"
+            if speaker != self.conversation.NARRATION:
+                yield f"{speaker}: {c.utterance}{' (hidden)' if c.hidden else ''}"
+            else:
+                yield f"{c.utterance}{' (hidden)' if c.hidden else ''}"
 
     def getPersona(self) -> str:
         return self.conversation.persona

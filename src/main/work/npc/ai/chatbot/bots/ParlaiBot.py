@@ -1,4 +1,4 @@
-from typing import List, Iterator, Tuple, Optional, Union
+from typing import List, Iterator, Optional
 
 from parlai.core.agents import create_agent_from_model_file
 
@@ -18,7 +18,9 @@ class ParlaiBot(Bot):
             cls.__DEFAULT_MODEL
         ] else None
 
-    def __init__(self, persona: List[str] = None, modelName=__DEFAULT_MODEL):
+    def __init__(self, persona: List[str] = None, name: str = "Bot", modelName=__DEFAULT_MODEL):
+        super().__init__(name)
+
         self.modelName = modelName
         self.agent = create_agent_from_model_file(modelName)
         self.persona = persona if persona else []
@@ -41,10 +43,11 @@ class ParlaiBot(Bot):
 
         return response['text']
 
-    def getConversation(self) -> Iterator[Tuple[Union[bool, str], str]]:
+    def getConversation(self) -> Iterator[str]:
         fromUser = True
         for utterance in self.agent.history.history_strings[1:]:
-            yield fromUser, utterance
+            speaker = "You" if fromUser else self.name
+            yield f"{speaker}: {utterance}"
             fromUser = not fromUser
 
     def getPersona(self) -> str:

@@ -1,4 +1,4 @@
-from typing import List, Iterator, Tuple, Optional, Union
+from typing import List, Iterator, Optional
 
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, ConversationalPipeline, Conversation
 
@@ -19,7 +19,9 @@ class TransformerBot(Bot):
             cls.__DEFAULT_MODEL
         ] else None
 
-    def __init__(self, persona: List[str] = None, modelName=__DEFAULT_MODEL):
+    def __init__(self, persona: List[str] = None, name: str = "Bot", modelName=__DEFAULT_MODEL):
+        super().__init__(name)
+
         self.modelName = modelName
         if modelName not in self.models:
             tokenizer = AutoTokenizer.from_pretrained(modelName)
@@ -47,11 +49,14 @@ class TransformerBot(Bot):
         self.conversation.mark_processed()
         return last[1]
 
-    def getConversation(self) -> Iterator[Tuple[Union[bool, str], str]]:
+    def getConversation(self) -> Iterator[str]:
         conv = self.conversation.iter_texts()
         next(conv)  # The first two are fake conversation to inject persona
         next(conv)
-        return conv
+
+        for utterance in conv:
+            speaker = "You" if utterance[0] else self.name
+            yield f"{speaker}: {utterance[1]}"
 
     def getPersona(self) -> str:
         conv = self.conversation.iter_texts()

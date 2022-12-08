@@ -14,7 +14,7 @@ import sys
 # bot.respondTo("Hi")
 
 
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, GPT2TokenizerFast
 from parlai.core.agents import create_agent_from_model_file
 
 transformer_models = ["facebook/blenderbot-400M-distill",
@@ -33,3 +33,6 @@ if modelName in transformer_models:
 
 if modelName in parlai_models:
     agent = create_agent_from_model_file(modelName)
+
+tokenizer = GPT2TokenizerFast.from_pretrained("gpt2")
+tokenizer("use this to download models")

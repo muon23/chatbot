@@ -1,4 +1,5 @@
 import unittest
+import asyncio
 
 from work.npc.ai.chatbot.bots.Gpt3Bot import Gpt3Bot
 from work.npc.ai.chatbot.bots.ParlaiBot import ParlaiBot
@@ -9,7 +10,7 @@ class BotTest(unittest.TestCase):
 
     __testPersona = ["I am a woman", "I am 28 years old", "I live in San Francisco", "I like jogging"]
 
-    def __runBot(self, bot):
+    async def __runBot(self, bot):
         utterances = [
             "Hello.  Where do you live?",
             "How nice.  What do you do for fun?",
@@ -18,7 +19,7 @@ class BotTest(unittest.TestCase):
 
         for utt in utterances:
             print(f">>> {utt}")
-            print(bot.respondTo(utt))
+            print(await bot.respondTo(utt))
 
         conversation = list(bot.getConversation())
         print(conversation)
@@ -26,7 +27,7 @@ class BotTest(unittest.TestCase):
 
     def test_transformer(self):
         bot = TransformerBot(persona=self.__testPersona)
-        self.__runBot(bot)
+        asyncio.run(self.__runBot(bot))
 
         pp = bot.getPersona()
         print(pp)
@@ -38,7 +39,7 @@ class BotTest(unittest.TestCase):
             persona=self.__testPersona,
             # modelName="zoo:bb3/bb3_3B/model"
         )
-        self.__runBot(bot)
+        asyncio.run(self.__runBot(bot))
 
         pp = bot.getPersona()
         print(pp)
@@ -53,7 +54,7 @@ class BotTest(unittest.TestCase):
         )
 
         print(bot.getPersona())
-        self.__runBot(bot)
+        asyncio.run(self.__runBot(bot))
 
     def test_gpt3_goodResponse(self):
         bot = Gpt3Bot()
@@ -102,12 +103,12 @@ April:  I don't think I am comfortable with that.  I like to be a fox girl.  
         # Test script
         instr1 = {
             "script": [
-                [0, "aaa", "bbb", "ccc"],
-                [1, "ddd", "eee"],
-                ["fff"],
-                "ggg",
-                "hhh",
-                [0, "iii"]
+                "Her: aaa",
+                "Me: bbb",
+                "(fff)",
+                "Her: ggg",
+                "Me: hhh",
+                "Tom: iii"
             ]
         }
 
@@ -132,12 +133,12 @@ April:  I don't think I am comfortable with that.  I like to be a fox girl.  
         hideIndices = set(bot._Gpt3Bot__makeIndices(hide, 20))
         for i, c in enumerate(conv2):
             if i in hideIndices:
-                self.assertIn("hidden", c[1])
+                self.assertIn("hidden", c)
             else:
-                self.assertNotIn("hidden", c[1])
+                self.assertNotIn("hidden", c)
 
         self.assertEqual(len(conv2), len(conv1))
-        self.assertIn(instr2.get("replace"), conv2[-1][1])
+        self.assertIn(instr2.get("replace"), conv2[-1])
 
         # Test show and replace with index
         show = ["0", "3:"]
@@ -152,33 +153,32 @@ April:  I don't think I am comfortable with that.  I like to be a fox girl.  
         showIndices = set(bot._Gpt3Bot__makeIndices(show, len(conv3)))
         for i, c in enumerate(conv3):
             if i in showIndices:
-                self.assertNotIn("hidden", c[1])
+                self.assertNotIn("hidden", c)
 
         self.assertEqual(len(conv3), len(conv1))
-        self.assertIn(replaceStr, conv3[3][1])
+        self.assertIn(replaceStr, conv3[3])
 
         instr4 = {
             "redo": 1,
-            "erase": ["0:1", 5]
+            "erase": ["-1", 5]
         }
         bot.modifyConversation(instr4)
         conv4 = list(bot.getConversation())
         print(conv4)
-        self.assertEqual(len(conv4), 1)
-        self.assertEqual(conv4[0][1], "fff")
+        self.assertEqual(len(conv4), 2)
+        self.assertEqual(conv4[0], "(fff)")
 
         bot.modifyConversation({**instr1, "hide_ai": True})
         conv5 = list(bot.getConversation())
         print(conv5)
-        self.assertEqual(len(conv5), len(conv1) + 1)
-        self.assertIn("hidden", conv5[0][1])
-        self.assertTrue(all([c[1] for c in conv5]))
+        self.assertIn("hidden", conv5[1])
 
         bot.modifyConversation({"hide_ai": True})
         conv6 = list(bot.getConversation())
         print(conv6)
         for c in conv6:
-            self.assertTrue(c[0] ^ ("hidden" in c[1]))
+            if "You" in c:
+                self.assertFalse("hidden" in c)
 
         bot.modifyConversation({"remove_ai": True})
         conv7 = list(bot.getConversation())

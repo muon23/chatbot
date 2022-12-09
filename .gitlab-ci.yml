@@ -37,7 +37,7 @@ uat-deploy:
     - ssh -o "StrictHostKeyChecking=no" ubuntu@${ENV}-tanka-sg-${APPNAME}-01.aws.tankaapps.com "aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin ${DOCKER_REGISTRY_URL}"
     - ssh -o "StrictHostKeyChecking=no" ubuntu@${ENV}-tanka-sg-${APPNAME}-01.aws.tankaapps.com "docker pull ${DOCKER_REGISTRY_URL}/${REPO_NAME}:${TAG_VERSION}"
     - ssh -o "StrictHostKeyChecking=no" ubuntu@${ENV}-tanka-sg-${APPNAME}-01.aws.tankaapps.com "docker rm -f ${APPNAME}"
-    - ssh -o "StrictHostKeyChecking=no" ubuntu@${ENV}-tanka-sg-${APPNAME}-01.aws.tankaapps.com "docker run -d --name ${APPNAME} -v /data/logs/${APPNAME}:/opt/app/logs -p 8080:8080 -p 8081:8081 --restart=always ${DOCKER_REGISTRY_URL}/${REPO_NAME}:${TAG_VERSION} python3 chatbot.py local"
+    - ssh -o "StrictHostKeyChecking=no" ubuntu@${ENV}-tanka-sg-${APPNAME}-01.aws.tankaapps.com "docker run -d --name ${APPNAME} -v /data/logs/${APPNAME}:/opt/app/logs -p 8080:8080 -p 8081:8081 --restart=always ${DOCKER_REGISTRY_URL}/${REPO_NAME}:${TAG_VERSION} python3 chatbot.py uat"
     - ssh -o "StrictHostKeyChecking=no" ubuntu@${ENV}-tanka-sg-${APPNAME}-01.aws.tankaapps.com "docker ps -f name=${APPNAME}"
   only:
     - /^uat-sg.*$/

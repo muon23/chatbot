@@ -268,3 +268,150 @@ gong shaojie:
 duan Yongjian:
 
 可以
+
+15
+李超:
+@美镇许 @Shuo Liu 我们1点开始，时间上OK吗？在产品项目早会房间https://zoom.us/j/84204943043?pwd=Rm9aWE1OZ0JLQWR3bDhaM1Vkby9lUT09
+
+duan yongjian:
+晚一点儿吧，我也去听听。还在吃饭:)
+
+Shuo Liu:
+那@Jonathan Zhu 也进来呗 聊几句，统一一下思想就行了
+
+Jonathan:
+好，我就听听，主要李超负责沟通。
+
+Shuo Liu:
+嗯，大家都在，有什么当场就定下了
+
+许美镇:
+晚点吧，刚煮好饭
+
+李超:
+2点半OK吗？
+
+duan yongjian:
+可以
+
+李超:
+好滴
+
+Shuo Liu:
+我随时可以
+
+许美镇:
+OK
+
+李超:
+Shuo Liu
+我随时可以
+我们先忙其他的，等2点半大伙儿一起，有问题当面过了哈
+
+16
+duan yongjian:
+@Jonathan Zhu @Wu,Hua-Zheng 现在时间方便吗？现在我们和华哥过一下1.0版本需要开发的需求
+
+Weiwei Zhu:
+好的
+
+Jonathan:
+稍等一会
+
+duan yongjian:
+好的
+
+Wu,Hua-Zheng:
+好的
+
+Jonathan:
+十分钟
+
+duan yongjian:
+好的
+
+17
+CJ Wang:
+Digest mode 就是這樣作的，效果感覺不大好 你們可以試試summary 和 digest 喜歡那一個
+
+18
+gong shaojie:
+@Hua Zhang @武花争 @李航 华哥，花花，李航，下午2点左右有时间吗？一起讨论下图片，视频数据预处理的方案，主要会用于图片和视频的搜索
+
+19.
+duan yongjian:
+明天上午10点30讨论
+
+20
+Xingwang deng:
+大家明天下午2点有空吗?有空的话我来定个zoom房间
+
+21
+gege zhang:
+Mukherjee et al. [2020] propose a Smart TO-DO system,
+which first detects commitment sentences and then generates
+to-do items using sequence-to-sequence models.
+
+22
+duan yongjian:
+@Hua Zhang @amy0 chen0 华哥，鹏飞：请问你们今天上午10点时间方便吗？方便的话先做个邀请拉新流程调整（TANIOS-1382）的需求评审，然后我们再聊一下回归测试计划安排。
+
+23
+duan yongjian:
+@张永兵 @Aqi Zhang @weiwei zhu @amy0 chen0  4/7日版本新增一个需求：选Chats、选人抽屉中选项列表是否包含"自己"场景梳理，已在JIRA中更新。请大家知晓，下周二早会上再和大家同步一下。
+
+24
+duan yongjian:
+@Hua Zhang 华哥，3/24版本移动端有个需求：「全局」按钮增加反馈色，我们在和小伙伴沟通过程中得知，涉及Focus报表几个按钮的反馈色需要Web端小伙伴支持开发。您看能不能安排在3/24版本做掉？如果时间实在来不及的话我们就在3/24之后的那个版本给Web端单独写个任务。
+
+25
+duan yongjian:
+正常情况下，每周二、三、四、五上午10点开项目晨会，采用Zoom方式：https://zoom.us/j/94329609827?pwd=ZkFiV3BwTmNHTGNWbzZrc1BDU0NBUT09&from=addon；届时请新加入的同事参加。
+
+26
+duan yongjian:
+已经开工的同事请今天上午10点准时加入早会
+
+27
+Chen Zhang:
+由于有其他会议安排，明天早会推迟一下，改在11点15开始。
+
+28
+duan yongjian:
+各位同事好，陈总要求我们学习的元宇宙今天下午2点-4点在大会议室集中学习。请大家准时参加。
+
+29
+duan yongjian:
+@永兵1张 刚才我们讨论的Thread选人逻辑，我建立了个工单，请在1/24富文本版本一起上线。谢谢
+
+30
+duan yongjian:
+请大家下午2点钟来大会议室进行需求评审会议，谢谢！
+
+31
+Chen Zhang:
+Topic: NPC.work Biweekly Meeting
+Date: Jan 6, 2022 06:10 PM Pacific Time (US and Canada)
+
+Meeting Recording:
+https://us02web.zoom.us/rec/share/a59w9GGNKUiACxxuImqM59FJRtDDDcj2ihPgdW5wkxs5ErjUnfx5_CTEkoDP9kNz.4W9FO45DRf5DWhbm
+
+Access Passcode: 4rU5$q%2
+
+32
+gong shaojie:
+花花还在面试，还需要10分钟左右，我们稍等一下
+
+33
+Hua Zhang:
+忘了一句话： 自评的时候， 请重视22年工作的总结，23年的工作计划
+
+34
+Yingbo Wang:
+各位同事大家好，依据公司发放通知，明天上午9:00-13:00将有集团范围的培训，届时陈总也将有现场讲话。请大家安排好个人工作，勿忘准时拨入，会议号码和密码如下：
+Meeting ID: 899 4626 5522
+Passcode: 375918
+
+
+
+

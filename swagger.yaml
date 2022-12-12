@@ -31,7 +31,7 @@ paths:
               properties:
                 mode:
                   type: string
-                  enum: [summary, digest, title, conclusion, actions, remider]
+                  enum: [summary, digest, title, conclusion, actions, remider, todo]
                   description: Mode of summarization.  See the decription of the responded results.
                   required: false
                   default: summary

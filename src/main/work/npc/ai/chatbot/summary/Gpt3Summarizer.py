@@ -83,8 +83,12 @@ class Gpt3Summarizer(Summarizer):
         mode = kwargs.get("mode", "summarize")
         numTitles = kwargs.get("numTitles", 3)
         language = kwargs.get("language", None)
+        prompt_param = kwargs.get("prompt", None)
 
-        prompt = self.__cleanUpText(text, mode, numTitles, language)
+        if prompt_param and mode in ["todo", "reminder"]:
+            prompt = "{}\n\n\n{}".format(text, prompt_param)
+        else:
+            prompt = self.__cleanUpText(text, mode, numTitles, language)
         logging.info(f"Prompt = \n{prompt}")
 
         try:

@@ -22,7 +22,7 @@ class Gpt3Summarizer(Summarizer):
         "title": "\n====\nRecommend {numTitles} titles for the text above{language}:\n",
         "conclusion": "\n====\nWhat is the conclusion of the text above{language}:\n",
         "actions": "\n====\nList the action items from the text above{language}:\n",
-        "todo": "\n====\ncreate a todo from the text above{language}:\n",
+        "todo": "\n====\n根据上面的对话创建一个提醒以及提醒时间、人物和主题，并判断主题属于哪个类别：0-开会，1-健身，2-学习，3-购物，4-聚会，5-其它:\n",
         "reminder": "\n====\nSet a reminder from the text above{language} with the time of the event:\n",
         "story": "\n====\nSummarize the section of a story above:\n",
     }

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import TypeVar, Iterator, Optional
+from typing import TypeVar, Iterator, Optional, List
 
 
 class Bot(ABC):
@@ -9,7 +9,7 @@ class Bot(ABC):
         self.name = name
 
     @abstractmethod
-    def modifyConversation(self, instruction, **kwargs):
+    async def modifyConversation(self, instruction, **kwargs):
         pass
 
     @abstractmethod
@@ -21,7 +21,7 @@ class Bot(ABC):
         pass
 
     @abstractmethod
-    def getPersona(self) -> str:
+    def getPersona(self) -> List[str]:
         pass
 
     @abstractmethod

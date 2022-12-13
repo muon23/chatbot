@@ -40,13 +40,11 @@ class PersonaHandler(HTTPMethodView):
         name = payload.get("name", "Bot")
         botPersona = payload.get("persona", [])
 
-        gpt3Limit = int(sanic.config.get("gpt3Limit", 10))
-
         try:
             bot = (
                     TransformerBot.of(botPersona, modelName=botModel) or
                     ParlaiBot.of(botPersona, modelName=botModel) or
-                    Gpt3Bot.of(botPersona, name, modelName=botModel, utteranceLimit=gpt3Limit)
+                    Gpt3Bot.of(botPersona, name, modelName=botModel)
             )
             if bot is None:
                 return self.error(f"Unknown chat bot model {botModel}")

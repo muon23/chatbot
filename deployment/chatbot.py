@@ -32,7 +32,7 @@ if environment != "local":
         app_id=app_id,
         config_server_url=config_server_url,
         authorization=authorization,
-        cache_file_path=cache_file_path, 
+        cache_file_path=cache_file_path,
         env=env
     )
     client.start()

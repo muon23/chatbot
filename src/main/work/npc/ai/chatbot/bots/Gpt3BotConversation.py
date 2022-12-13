@@ -1,7 +1,7 @@
 import difflib
 import logging
 import re
-from typing import Iterator, List, Optional, Set
+from typing import List, Optional, Set
 
 from work.npc.ai.chatbot.summary.Gpt3Summarizer import Gpt3Summarizer
 from work.npc.ai.utilities.Gpt3Portal import Gpt3Portal
@@ -10,9 +10,15 @@ from work.npc.ai.utilities.Languages import Languages
 
 class Gpt3BotUtterance:
     def __init__(self, speaker: str, utterance: str):
+        if speaker == Gpt3BotConversation.NARRATION:
+            # Narration needs to be surrounded by ( )
+            if utterance[0] != "(":
+                utterance = "(" + utterance
+            if utterance[-1] != ")":
+                utterance += ")"
+
         self.speaker = speaker
         self.utterance = utterance
-        self.hidden = False
         self.tokens = Gpt3Portal.estimateTokens(Gpt3BotConversation.getLine(speaker, utterance))
 
 
@@ -20,27 +26,47 @@ class Gpt3BotSummary:
     __summarizer = None
 
     @classmethod
-    async def of(cls, utterances: List[Gpt3BotUtterance], batchTokens: int = 3000) -> Iterator["Gpt3BotSummary"]:
+    async def ofUtterances(cls, utterances: List[Gpt3BotUtterance], begin: int, end: int) -> Optional["Gpt3BotSummary"]:
         if not cls.__summarizer:
             cls.__summarizer = Gpt3Summarizer()
 
-        tokens = 0
-        lastIdx = 0
-        text = ""
-        for idx, utt in enumerate(utterances):
-            if utt.hidden:
-                continue
+        if not utterances or begin >= end:
+            return None
 
-            if tokens + utt.tokens <= batchTokens:
-                text += "\n" + Gpt3BotConversation.getLine(utt.speaker, utt.utterance)
-            else:
-                summary = await cls.__summarizer.summarize(text, mode="story")
-                yield Gpt3BotSummary(summary, lastIdx, idx - 1)
-                lastIdx = idx
-                text = Gpt3BotConversation.getLine(utt.speaker, utt.utterance)
+        text = "\n".join([
+            Gpt3BotConversation.getLine(utt.speaker, utt.utterance) for utt in utterances[begin:end]
+        ])
 
-            summary = await cls.__summarizer.summarize(text, mode="story")
-            yield Gpt3BotSummary(summary, lastIdx, len(utterances))
+        summary = await cls.__summarizer.summarize(text, mode="story")
+        summarized = Gpt3BotSummary(summary, begin, end)
+
+        originalTokens = sum([u.tokens for u in utterances[begin:end]])
+        ratio = summarized.tokens / originalTokens
+        logging.info(f"Summarized utterances.  {summarized.tokens} / {originalTokens} = {ratio:4.2f}")
+        return summarized
+
+    @classmethod
+    async def ofSummaries(cls, summaries: List["Gpt3BotSummary"]) -> Optional["Gpt3BotSummary"]:
+        if not cls.__summarizer:
+            cls.__summarizer = Gpt3Summarizer()
+
+        if not summaries:
+            return None
+        if len(summaries) == 1:
+            return summaries[0]
+
+        begin = summaries[0].begin
+        end = summaries[-1].end
+
+        text = "\n".join([s.summary for s in summaries])
+
+        summary = await cls.__summarizer.summarize(text, mode="story")
+        summarized = Gpt3BotSummary(summary, begin, end)
+
+        originalTokens = sum([s.tokens for s in summaries])
+        ratio = summarized.tokens / originalTokens
+        logging.info(f"Summarized summaries.  {summarized.tokens} / {originalTokens} = {ratio:4.2f}")
+        return summarized
 
     def __init__(self,  summary: str, begin: int, end: int):
         self.summary = summary
@@ -54,19 +80,23 @@ class Gpt3BotConversation:
     MIN_UTTERANCES = 6
     NARRATION = "NARRATION"
 
-    def __init__(self, name: str, persona: List[str], utteranceLimit: int):
+    def __init__(self, name: str, persona: List[str], **kwargs):
         self.name = name
-        self.persona = "  ".join([self.__changeSubject(fact, name) for fact in persona]) if persona else []
-        self.personaTokens = Gpt3Portal.estimateTokens(self.persona)
+        self.persona: List[str] = [self.__changeSubject(fact, name) for fact in persona]
+        self.personaTokens: int = sum([Gpt3Portal.estimateTokens(fact) for fact in self.persona])
         self.conversation: List[Gpt3BotUtterance] = []
         self.summaries: List[Gpt3BotSummary] = []
-        self.utteranceLimit = utteranceLimit
-        self.currentUtteranceLimit = utteranceLimit
+        self.summaryTokens: int = 0
+        self.activeUtteranceTokens: int = 0
 
-        self.me = "我" if any([Languages.isIdeography(c) for c in self.name]) else "Me"
+        self.maxActiveUtteranceTokens: int = kwargs.get("maxActiveUtteranceTokens", 2000)
+        self.maxTokens: int = kwargs.get("maxTokens", 3000)
+
+        userChinese = any([Languages.isIdeography(c) for c in self.name])
+        self.me = "我" if userChinese else "I"
+        self.you = "你" if userChinese else "You"
 
         logging.info(f"Persona: {self.persona}")
-        logging.info(f"Utterance limit: {self.utteranceLimit}")
 
     @classmethod
     def __changeSubject(cls, fact, name):
@@ -89,6 +119,7 @@ class Gpt3BotConversation:
                 "my" if word == "your" else
                 "mine" if word == "yours" else
                 "myself" if word == "yourself" else
+                f"{name} and I" if word in ["we", "We"] else
                 word
             )
         fact = " ".join(changed)
@@ -101,49 +132,98 @@ class Gpt3BotConversation:
 
         return fact
 
-    def addUtterance(self, utterance: str, speaker: Optional[str] = None):
+    def __recalculateActiveUtteranceTokens(self):
+        self.activeUtteranceTokens = sum(
+            c.tokens for c in self.conversation[self.activeUtteranceStart():]
+        )
+        return self.activeUtteranceTokens
+
+    async def addUtterance(self, utterance: str, speaker: Optional[str] = None):
         if speaker is None:
             speaker = self.nextSpeaker()
 
-        self.conversation.append(Gpt3BotUtterance(speaker, utterance))
+        utt = Gpt3BotUtterance(speaker, utterance)
+        self.conversation.append(utt)
+        self.activeUtteranceTokens += utt.tokens
+        await self.__summarizeIncrementally()
 
-    def getPrompt2(self, nextSpeaker: str = None):
-        # TODO implement this
-        pass
+    async def __summarizeIncrementally(self):
+        # If active utterance tokens exceeds limit, summarize 1/2 of the utterances
+        while self.activeUtteranceTokens > self.maxActiveUtteranceTokens:
+            # Figure from where to where to summarize
+            summarizeBeginIdx = self.activeUtteranceStart()
+            summarizeEndIdx = summarizeBeginIdx
+            tokens2Summarize = self.maxActiveUtteranceTokens // 2
+            self.activeUtteranceTokens -= tokens2Summarize
+            while tokens2Summarize > 0:
+                try:
+                    tokens2Summarize -= self.conversation[summarizeEndIdx].tokens
+                except IndexError as e:
+                    # An reproducible bug occurs here
+                    ss = " ".join([f"{s.begin},{s.end},{s.tokens}" for s in self.summaries])
+                    logging.error(f"sei={summarizeEndIdx}, len={self.length()}, tts={tokens2Summarize}, aut={self.activeUtteranceTokens}, ss=[{ss}]")
+                    raise e
+                summarizeEndIdx += 1
+            self.activeUtteranceTokens += tokens2Summarize
+
+            summary = await Gpt3BotSummary.ofUtterances(self.conversation, summarizeBeginIdx, summarizeEndIdx)
+            self.summaries.append(summary)
+            self.summaryTokens += summary.tokens
+
+        # Calculate prompt tokens.  If exceeds limit, summarize the summaries.
+        promptTokens = self.personaTokens + self.summaryTokens + self.activeUtteranceTokens
+        while promptTokens >= self.maxTokens:
+            if len(self.summaries) < 2:
+                # Cannot summarize further
+                raise Gpt3Portal.TooManyTokensError("Token limit exceeded.  Cannot summarize any further.")
+
+            summary = await Gpt3BotSummary.ofSummaries(self.summaries[0:1])
+            promptTokens -= self.summaries[0].tokens + self.summaries[1].tokens - summary.tokens
+            self.summaries = [summary] + summary[2:]
+
+    async def summarize(self):
+        self.summaries = []
+        self.summaryTokens = 0
+        self.__recalculateActiveUtteranceTokens()
+        await self.__summarizeIncrementally()
 
     def getPrompt(self, nextSpeaker: str = None):
-        utterances = []
-        for u in reversed(self.conversation):
-            if not u.hidden:
-                utterances.append(self.getLine(u.speaker, u.utterance))
-                if len(utterances) > self.currentUtteranceLimit:
-                    break
-        utterances.reverse()
-
+        activeUtteranceBegin = self.activeUtteranceStart()
         if not nextSpeaker:
             nextSpeaker = self.name
-        return "\n".join([self.persona, "========"] + utterances) + f"\n{nextSpeaker}: "
+
+        logging.info(
+            f"Number of tokens: persona={self.personaTokens}, summary={self.summaryTokens}, "
+            f"utterance={self.activeUtteranceTokens} "
+        )
+        prompt = "\n".join(
+            self.persona + ["===="] +
+            [s.summary for s in self.summaries] +
+            [self.getLine(u.speaker, u.utterance) for u in self.conversation[activeUtteranceBegin:]] +
+            [f"\n{nextSpeaker}: "]
+        )
+        return prompt
 
     def reset(self):
         self.conversation = []
+        self.summaries = []
+        self.summaryTokens = 0
+        self.activeUtteranceTokens = 0
 
-    def restore(self, script: list):
+    async def restore(self, script: list):
         for utterance in script:
-            m = re.match(r"\s*((\d+).)?\s*(\w+):\s*(.+)", utterance)
+            m = re.match(r"^\s*((\d+)\.)?\s*(\w+):\s*(.+)", utterance)
             if m:
-                speaker = "Me" if m.group(3) == "You" else m.group(3)
-                self.addUtterance(m.group(4), speaker=speaker)
+                speaker = self.me if m.group(3) == self.you else m.group(3)
+                await self.addUtterance(m.group(4), speaker=speaker)
                 continue
 
-            m = re.match(r"\s*((\d+).)?\s*\(\s*(.+)\s*\)", utterance)
+            m = re.match(r"^\s*((\d+)\.)?\s*\(\s*([^()]+)\s*\)\s*$", utterance)
             if m:
-                self.addUtterance(m.group(3), speaker=self.NARRATION)
+                await self.addUtterance(f"({m.group(3)})", speaker=self.NARRATION)
                 continue
 
-    def removeAi(self):
-        self.conversation = [c for i, c in enumerate(self.conversation) if c.speaker == self.me]
-
-    def erase(self, indices: Set[int]):
+    async def erase(self, indices: Set[int]):
         if not indices:
             return
 
@@ -160,37 +240,130 @@ class Gpt3BotConversation:
 
         self.conversation = remain + self.conversation[indices[-1] + 1:]
 
+        self.__recalculateActiveUtteranceTokens()
+        activeUtteranceStart = self.activeUtteranceStart()
+        if any([i < activeUtteranceStart for i in indices]):
+            await self.summarize()
+
     def redo(self):
         # Clear anything after and include the last utterance from the user
         try:
             while self.conversation[-1].speaker != self.me:
                 self.conversation.pop()
             self.conversation.pop()
+            self.__recalculateActiveUtteranceTokens()
         except IndexError:
             pass
 
-    def hide(self, hidden: Set[int]):
-        for i in hidden:
-            self.conversation[i].hidden = True
+    def __parseReplacement(self, replacement: str):
+        m = re.match(r"^\s*((\d+)\.)?\s*\(\s*([^()]+)\s*\)\s*$", replacement)
+        if m:
+            idx = int(m.group(2)) if m.group(2) else None
+            utterance = m.group(3) if m.group(3) else None
+            return idx, self.NARRATION, utterance.strip()
 
-    def show(self, show: Set[int]):
-        for i in show:
-            self.conversation[i].hidden = False
+        m = re.match(r"^\s*((\d+).)?\s*((\w+):)?\s*(.+)", replacement)
+        if m:
+            idx = int(m.group(2)) if m.group(2) else None
+            speaker = None if not m.group(4) else self.me if m.group(4) == self.you else m.group(4)
+            utterance = m.group(5) if m.group(5) else None
+            return idx, speaker, utterance.strip()
 
-    def hideAi(self):
-        for c in self.conversation:
-            if c.speaker != self.me and c.speaker != self.NARRATION:
-                c.hidden = True
+        return None, None, None
 
-    def replace(self, utterance: str, idx: int = None):
-        if idx is None:
-            if len(self.conversation) == 0:
-                self.addUtterance(utterance)
-                return
+    async def replace(self, replacement):
+        needSummarize = False
+        if not isinstance(replacement, list):
+            replacement = [replacement]
+
+        for r in replacement:
+            if not isinstance(r, str):
+                continue
+
+            idx, speaker, utterance = self.__parseReplacement(r)
+            if not utterance:
+                continue
+
+            if idx is None:
+                if self.length() == 0:
+                    await self.addUtterance(utterance)
+                    return
+                else:
+                    idx = -1
+
+            if speaker:
+                self.conversation[idx].speaker = speaker
+            self.conversation[idx].utterance = utterance
+            self.conversation[idx].tokens = Gpt3Portal.estimateTokens(
+                Gpt3BotConversation.getLine(self.conversation[idx].speaker, utterance)
+            )
+
+            if self.activeUtteranceStart() > idx >= 0:
+                needSummarize = True
+
+        if needSummarize:
+            await self.summarize()
+
+    async def script(self, script):
+        nextSpeaker = self.nextSpeaker()
+        if not isinstance(script, list):
+            script = [script]
+
+        for line in script:
+
+            if not isinstance(line, str):
+                continue
+
+            _, speaker, utterance = self.__parseReplacement(line)
+            if not utterance:
+                continue
+
+            if not speaker:
+                speaker = nextSpeaker
+            elif speaker == self.you:
+                speaker = self.me
+
+            await self.addUtterance(utterance=utterance, speaker=speaker)
+            nextSpeaker = speaker
+
+    async def insert(self, scripts):
+        if not isinstance(scripts, list):
+            await self.script(scripts)
+
+        if isinstance(scripts[0], int):
+            scripts = [scripts]
+
+        needSummarize = False
+        insertions = []
+        for script in scripts:
+            if not isinstance(script, list):
+                await self.script(script)
+
+            insertion = script.pop(0) if isinstance(script[0], int) else self.length()
+            utterances = []
+            for line in script:
+                _, speaker, utterance = self.__parseReplacement(line)
+                utterances.append(Gpt3BotUtterance(speaker, utterance))
+            insertions.append((insertion, utterances))
+
+            if self.activeUtteranceStart() > insertion >= 0:
+                needSummarize = True
+
+        insertions.sort(key=lambda x: x[0])
+        inserted = []
+        lastInsertion = 0
+        for insertion in insertions:
+            if insertion[0] == 0:
+                inserted = insertion[1]
             else:
-                idx = -1
+                inserted += self.conversation[lastInsertion:insertion[0]] + insertion[1]
+                lastInsertion = insertion[0]
 
-        self.conversation[idx].utterance = utterance
+        inserted += self.conversation[lastInsertion:]
+        self.conversation = inserted
+
+        if needSummarize:
+            await self.summarize()
 
     def isSimilarToLast(self, speaker: str, utterance: str, threshold=0.6) -> bool:
         for u in reversed(self.conversation):
@@ -211,25 +384,11 @@ class Gpt3BotConversation:
     def length(self):
         return len(self.conversation)
 
+    def activeUtteranceStart(self):
+        return self.summaries[-1].end if self.summaries else 0
+
     def getSpeaker(self, isUser: bool):
         return self.me if isUser else self.name
-
-    def fewerUtterances(self, n: int = 2):
-        if self.currentUtteranceLimit >= self.MIN_UTTERANCES + n:
-            self.currentUtteranceLimit -= n
-            logging.info(f"Lower number of utterances to {self.currentUtteranceLimit}")
-            return self.currentUtteranceLimit
-        else:
-            logging.info(f"Cannot have any fewer utterances than {self.currentUtteranceLimit}")
-            return None
-
-    def promptMoreUtterances(self, n: int = 2):
-        if self.currentUtteranceLimit <= self.utteranceLimit - n:
-            self.currentUtteranceLimit += n
-            logging.info(f"Raise number of utterances to {self.currentUtteranceLimit}")
-            return self.currentUtteranceLimit
-        else:
-            return None
 
     @classmethod
     def getLine(cls, speaker: str, utterance: str) -> str:
@@ -237,4 +396,3 @@ class Gpt3BotConversation:
             return f"{utterance}"
         else:
             return f"{speaker}: {utterance}"
-

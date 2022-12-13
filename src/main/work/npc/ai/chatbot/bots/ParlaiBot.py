@@ -26,7 +26,7 @@ class ParlaiBot(Bot):
         self.persona = persona if persona else []
         self.modifyConversation()
 
-    def modifyConversation(self, instruction=None, **kwargs):
+    async def modifyConversation(self, instruction=None, **kwargs):
         if not instruction or "reset" not in instruction:
             return
 

@@ -30,15 +30,18 @@ class TransformerBot(Bot):
 
         self.persona = persona
         self.conversation = None
-        self.modifyConversation()
+        self.modifyConversationSync()
 
-    def modifyConversation(self, instruction=None, **kwargs):
+    def modifyConversationSync(self, instruction=None, **kwargs):
         if not self.conversation or (instruction and "reset" in instruction):
             self.conversation = Conversation()
             facts = ".  ".join(self.persona) if self.persona else ""
             self.conversation.add_user_input('Hello')
             self.conversation.append_response(facts)
             self.conversation.mark_processed()
+
+    async def modifyConversation(self, instruction=None, **kwargs):
+        self.modifyConversationSync(instruction)
 
     async def respondTo(self, utterance: str, **kwargs) -> Optional[str]:
         self.conversation.add_user_input(utterance)

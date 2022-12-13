@@ -26,7 +26,7 @@ class ChatHandler(HTTPMethodView):
 
         sanic = Sanic.get_app()
 
-        persona.bot.modifyConversation(payload)
+        await persona.bot.modifyConversation(payload)
 
         response = {
             "version": sanic.config.VERSION,

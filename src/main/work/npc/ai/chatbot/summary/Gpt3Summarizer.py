@@ -56,7 +56,7 @@ class Gpt3Summarizer(Summarizer):
         if not prompt:
             raise RuntimeError(f"Mode {mode} not supported")
 
-        return prompt.format(language=language, numTitle=numTitle)
+        return prompt.format(language=language, numTitles=numTitle)
 
     @classmethod
     def __cleanUpText(cls, text: str, mode: str, numTitles: int, language: Optional[str]) -> str:

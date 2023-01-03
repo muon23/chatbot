@@ -1,5 +1,6 @@
 FROM 587070264874.dkr.ecr.us-west-2.amazonaws.com/base-tanka-chatbot:v1.0.0
 
+RUN apt-get update
 RUN apt-get install --no-install-recommends --yes build-essential
 # Environment variables
 ENV CHATBOT_BASE_PATH=/tankabot

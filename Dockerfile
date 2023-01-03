@@ -28,3 +28,5 @@ RUN pip3 install --no-cache-dir zhon==1.1.5
 RUN pip3 install --no-cache-dir sanic-cors==2.2.0
 RUN pip3 install --no-cache-dir iso-639==0.4.5
 RUN pip3 install --no-cache-dir apollo-client==2.1.2
+RUN pip3 install --no-cache-dir fasttext-langdetect==1.0.3
+RUN pip3 install --no-cache-dir wget==3.2

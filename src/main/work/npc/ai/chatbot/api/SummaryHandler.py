@@ -48,6 +48,8 @@ class SummaryHandler(HTTPMethodView):
                     del response["version"]
                 if "language" in response:
                     del response["language"]
+                if summary is None:
+                    response["title"] = ""
                 if summary.startswith("1.") and numTitles == 1:
                     response["title"] = summary[2:].strip()
 

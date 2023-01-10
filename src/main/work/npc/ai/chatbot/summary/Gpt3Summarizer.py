@@ -1,9 +1,11 @@
 import logging
 import os
 import re
+from typing import Optional
 
 import openai
 from iso639 import languages
+# from ftlangdetect.detect import get_or_load_model, detect
 
 from work.npc.ai.chatbot.summary.Summarizer import Summarizer
 from work.npc.ai.utilities.Gpt3Portal import Gpt3Portal
@@ -39,6 +41,9 @@ class Gpt3Summarizer(Summarizer):
                 raise RuntimeError("Environment OPENAI_KEY not defined")
 
             self.__portal = Gpt3Portal.of(accessKey)
+
+        # download fasttext language detect model
+        # get_or_load_model()
 
     @classmethod
     def __getPrompt(cls, **kwargs) -> str:
@@ -90,6 +95,10 @@ class Gpt3Summarizer(Summarizer):
 
         mode = kwargs.get("mode")
         prompt_param = kwargs.get("prompt")
+
+        # if language is None:
+        #     lang_detect = detect(text=text.replace("\n", " "), low_memory=False)
+        #     language = lang_detect["lang"]
 
         if prompt_param and mode in ["todo", "reminder"]:
             prompt = "{}\n\n\n{}".format(text, prompt_param)

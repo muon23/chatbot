@@ -20,7 +20,7 @@ class SummaryHandler(HTTPMethodView):
         model = payload.get("model", "gpt3")
         text = payload.get("text", "")
         mode = payload.get("mode", "summary")
-        numTitles = payload.get("numTitles", 3)
+        numTitles = payload.get("numTitles", 1)
         language = payload.get("language", None)
         prompt = payload.get("prompt", None)
         tone = payload.get("tone", None)
@@ -45,6 +45,18 @@ class SummaryHandler(HTTPMethodView):
 
             if language:
                 response["language"] = language
+
+            if mode == "title":
+                if "version" in response:
+                    del response["version"]
+                if "language" in response:
+                    del response["language"]
+
+                if summary is None:
+                    response["title"] = ""
+                else:
+                    if summary.startswith("1.") and numTitles == 1:
+                        response["title"] = summary[2:].strip()
 
             logging.info(response)
 

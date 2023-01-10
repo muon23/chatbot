@@ -53,7 +53,7 @@ class ChatBotServer:
         if app.config.serverPort == 0:
             app.run(debug=True)
         else:
-            app.run(host='0.0.0.0', port=app.config.serverPort)
+            app.run(host='0.0.0.0', port=app.config.serverPort, single_process=True)
 
 
 if __name__ == '__main__':

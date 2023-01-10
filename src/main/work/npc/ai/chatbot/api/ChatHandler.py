@@ -18,7 +18,7 @@ class ChatHandler(HTTPMethodView):
         payload = request.json
         logging.info(f"POST: {personaId}: {payload}")
 
-        utterance = payload.get("utterance", "")
+        utterance = payload.pop("utterance", "")
 
         persona = Personas.get(personaId)
         if not persona:
@@ -36,7 +36,7 @@ class ChatHandler(HTTPMethodView):
 
         if utterance:
             try:
-                reply = await persona.bot.respondTo(utterance, debug=sanic.config.get("debug", None))
+                reply = await persona.bot.respondTo(utterance, debug=sanic.config.get("debug", None), **payload)
             except RuntimeError as e:
                 return self.error(str(e), 503)
 

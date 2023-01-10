@@ -1,4 +1,6 @@
 import logging
+import json as pjson
+import os
 
 from sanic import json, Sanic
 from sanic.views import HTTPMethodView
@@ -31,20 +33,31 @@ class PersonaHandler(HTTPMethodView):
 
         sanic = Sanic.get_app()
 
+        load = payload.get("load", None)
+        if load:
+            load = os.path.expanduser(load)
+            try:
+                with open(load, 'r') as f:
+                    data = pjson.load(f)
+                    payload = data["persona"]  # Override payload with whatever in the file
+            except FileNotFoundError:
+                return self.error(f"File {load} not found")
+            except KeyError:
+                return self.error(f"File {load} has incompatible format")
+
         botModel = payload.get("model", sanic.config.get("botModel", "bb2-1B"))
         if botModel in self.__modelTranslation:
             botModel = self.__modelTranslation[botModel]
 
         logging.info(f"Use model {botModel}")
 
-        name = payload.get("name", "Bot")
-        botPersona = payload.get("persona", [])
+        botPersona = payload.pop("persona", [])
 
         try:
             bot = (
-                    TransformerBot.of(botPersona, modelName=botModel) or
-                    ParlaiBot.of(botPersona, modelName=botModel) or
-                    Gpt3Bot.of(botPersona, name, modelName=botModel)
+                    TransformerBot.of(botPersona, modelName=botModel, **payload) or
+                    ParlaiBot.of(botPersona, modelName=botModel, **payload) or
+                    Gpt3Bot.of(botPersona, modelName=botModel, **payload)
             )
             if bot is None:
                 return self.error(f"Unknown chat bot model {botModel}")
@@ -53,7 +66,10 @@ class PersonaHandler(HTTPMethodView):
             logging.warning(str(e))
             return self.error(str(e))
 
-        persona = Personas.new(bot, name=name)
+        persona = Personas.new(bot, name=payload.get("name", "Bot"))
+
+        if load:
+            await persona.bot.load(data["script"])
 
         response = {
             "version": sanic.config.VERSION,
@@ -67,6 +83,9 @@ class PersonaHandler(HTTPMethodView):
         return json(response, status=200, content_type='application/json')
 
     async def get(self, request, personaId):
+        if not personaId:
+            self.error("Missing personal ID")
+
         payload = request.json
         logging.info(f"GET: {personaId}: {payload}")
 
@@ -84,6 +103,8 @@ class PersonaHandler(HTTPMethodView):
         }
 
         logging.info(response)
+
+        return json(response, status=200, content_type='application/json')
 
     async def delete(self, request, personaId):
         payload = request.json

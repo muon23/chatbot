@@ -11,16 +11,16 @@ class TransformerBot(Bot):
     __DEFAULT_MODEL = "facebook/blenderbot-1B-distill"
 
     @classmethod
-    def of(cls, persona: List[str] = None, modelName=__DEFAULT_MODEL) -> Bot:
-        return TransformerBot(persona, modelName) if modelName in [
+    def of(cls, persona: List[str] = None, modelName=__DEFAULT_MODEL, **kwargs) -> Bot:
+        return TransformerBot(persona, modelName, **kwargs) if modelName in [
             "facebook/blenderbot-400M-distill",
             "facebook/blenderbot-1B-distill",
             "facebook/blenderbot-3B",
             cls.__DEFAULT_MODEL
         ] else None
 
-    def __init__(self, persona: List[str] = None, name: str = "Bot", modelName=__DEFAULT_MODEL):
-        super().__init__(name)
+    def __init__(self, persona: List[str] = None, modelName=__DEFAULT_MODEL, **kwargs):
+        super().__init__(**kwargs)
 
         self.modelName = modelName
         if modelName not in self.models:
@@ -68,3 +68,6 @@ class TransformerBot(Bot):
 
     def getModelName(self) -> str:
         return self.modelName
+
+    async def load(self, script: List[str]):
+        raise NotImplemented(f"Loading from file is not supported for model '{self.getModelName()}'")

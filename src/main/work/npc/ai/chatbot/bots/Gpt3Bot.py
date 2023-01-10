@@ -1,5 +1,7 @@
+import json
 import logging
 import os
+import random
 import re
 from typing import Iterator, Tuple, List, Optional, Set
 
@@ -12,19 +14,16 @@ from work.npc.ai.utilities.Languages import Languages
 class Gpt3Bot(Bot):
     __portal: Gpt3Portal = None
 
-    __DEFAULT_TEMPERATURE = 0.75
+    __MODEL_NAME = "GPT-3 Davinci"
+    __DEFAULT_TEMPERATURE = 0.9
+    __DEFAULT_OUTPUT_TOKENS = 200
 
     @classmethod
-    def of(
-            cls,
-            persona: List[str] = None,
-            name: str = "Bot",
-            modelName: str = None,
-    ) -> Bot:
-        return Gpt3Bot(persona, name) if modelName.lower() == "gpt3" else None
+    def of(cls, persona: List[str] = None, modelName: str = None, **kwargs) -> Bot:
+        return Gpt3Bot(persona, **kwargs) if modelName.lower() in ["gpt3", cls.__MODEL_NAME.lower()] else None
 
-    def __init__(self, persona: List[str] = None, name: str = "Bot"):
-        super().__init__(name)
+    def __init__(self, persona: List[str] = None, **kwargs):
+        super().__init__(**kwargs)
 
         if not self.__portal:
             accessKey = os.environ.get("OPENAI_KEY")
@@ -33,8 +32,11 @@ class Gpt3Bot(Bot):
 
             self.__portal = Gpt3Portal.of(accessKey)
 
-        self.conversation = Gpt3BotConversation(self.name, persona)
-        self.tokenLimit = 200
+        self.persona = persona
+        kwargs["name"] = self.name
+        self.conversation = Gpt3BotConversation(self.persona, **kwargs)
+        self.maxOutputTokens = self.__DEFAULT_OUTPUT_TOKENS
+        self.next2talk = set()
 
     def parseUtterance(self, utterance: str) -> Tuple[Optional[str], Optional[str]]:
         if not utterance:
@@ -64,7 +66,7 @@ class Gpt3Bot(Bot):
                     return None, None  # The utterance contains no alphanumerical letters
 
                 # Look the first section that looks like a chat
-                utterance = re.findall("[^-.,)=!?*_][-A-Za-z0-9,.:;?! \"\'()]+", utterance)[0]
+                utterance = re.findall(r"[^-.,)=!?*_][-A-Za-z0-9,.:;?! \"'()&%$#]+", utterance)[0]
 
             logging.info(f"Extracted response: {utterance}")
 
@@ -95,8 +97,14 @@ class Gpt3Bot(Bot):
 
     async def respondTo(self, utterance: str, **kwargs) -> Optional[str]:
         debug = kwargs.get("debug", False)
+        temperature = kwargs.get("temperature", self.__DEFAULT_TEMPERATURE)
 
-        speakers = kwargs.get("next", set())
+        speakers = kwargs.get("next", [])
+        if not isinstance(speakers, list):
+            speakers = [speakers]
+        speakers = set(speakers)
+        speakers.update(self.next2talk)
+        self.next2talk = []
         speakers.update(re.findall(r"@(\w+)", utterance))
         utterance = utterance.replace("@", "")
 
@@ -104,6 +112,10 @@ class Gpt3Bot(Bot):
             speakers = {self.conversation.name}
 
         await self.conversation.addUtterance(utterance, speaker=self.conversation.me)
+
+        after = kwargs.get("after", [])
+        if after:
+            await self.conversation.script(after)
 
         replies = []
         while speakers:
@@ -115,14 +127,14 @@ class Gpt3Bot(Bot):
             print(prompt) if debug else None
 
             response = None
-            tokenLimit = self.tokenLimit
+            tokenLimit = self.maxOutputTokens
             while not response:
                 try:
                     response = await self.__portal.complete(
                         prompt=prompt,
                         retries=5,
                         stop=f"{self.conversation.me}: ",
-                        temperature=self.__DEFAULT_TEMPERATURE,
+                        temperature=temperature,
                         max_tokens=tokenLimit
                     )
 
@@ -142,18 +154,42 @@ class Gpt3Bot(Bot):
                     logging.warning(message)
                     raise RuntimeError(message)
 
+        save = kwargs.get("save", None)
+        if save:
+            self.save(save)
+
         return "\n".join(replies)
+
+    def save(self, file: str):
+        persona = {
+            "persona": self.persona,
+            "name": self.name,
+            "model": self.__MODEL_NAME
+        }
+        if self.conversation.me not in ["我", "I"]:
+            persona["you"] = self.conversation.me
+
+        script = list(self.getConversation())
+
+        toSave = {"persona": persona, "script": script}
+        file = os.path.expanduser(file)
+        os.makedirs(os.path.dirname(file), exist_ok=True)
+        with open(file, "w") as f:
+            json.dump(toSave, f)
+
+    async def load(self, script: List[str]):
+        await self.conversation.script(script)
 
     def getConversation(self) -> Iterator[str]:
         for c in self.conversation.conversation:
-            speaker = "You" if c.speaker == self.conversation.me else c.speaker
+            speaker = "You" if c.speaker == "I" else "你" if c.speaker == "我" else c.speaker
             yield self.conversation.getLine(speaker, c.utterance)
 
-    def getPersona(self) -> str:
-        return "  ".join(self.conversation.persona)
+    def getPersona(self):
+        return self.persona
 
     def getModelName(self) -> str:
-        return "GPT-3 Davinci"
+        return self.__MODEL_NAME
 
     @staticmethod
     def __makeIndices(specs, last: int) -> Iterator[int]:
@@ -214,3 +250,18 @@ class Gpt3Bot(Bot):
         insert = instruction.get("insert", None)
         if insert:
             await self.conversation.insert(insert)
+
+        next2talk = instruction.get("next", [])
+        self.next2talk = set(next2talk) if isinstance(next2talk, list) else {next2talk}
+
+        randomTalk = instruction.get("random", [])
+        if randomTalk:
+            randomTalk = set(randomTalk) if isinstance(randomTalk, list) else {randomTalk}
+            chance = 1/len(randomTalk)
+            for r in randomTalk:
+                if random.random() < chance:
+                    self.next2talk.add(r)
+
+        replaceMe = instruction.get("me", None)
+        if replaceMe:
+            self.conversation.replaceMe = replaceMe

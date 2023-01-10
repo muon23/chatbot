@@ -10,16 +10,16 @@ class ParlaiBot(Bot):
     __DEFAULT_MODEL = "zoo:blender/blender_3B/model"
 
     @classmethod
-    def of(cls, persona: List[str] = None, modelName=__DEFAULT_MODEL) -> Bot:
-        return ParlaiBot(persona, modelName) if modelName in [
+    def of(cls, persona: List[str] = None, modelName=__DEFAULT_MODEL, **kwargs) -> Bot:
+        return ParlaiBot(persona, modelName, **kwargs) if modelName in [
             "zoo:blender/blender_400M/model",
             "zoo:blender/blender_3B/mode",
             "zoo:bb3/bb3_3B/model",
             cls.__DEFAULT_MODEL
         ] else None
 
-    def __init__(self, persona: List[str] = None, name: str = "Bot", modelName=__DEFAULT_MODEL):
-        super().__init__(name)
+    def __init__(self, persona: List[str] = None, modelName=__DEFAULT_MODEL, **kwargs):
+        super().__init__(**kwargs)
 
         self.modelName = modelName
         self.agent = create_agent_from_model_file(modelName)
@@ -55,3 +55,6 @@ class ParlaiBot(Bot):
 
     def getModelName(self) -> str:
         return self.modelName
+
+    async def load(self, script: List[str]):
+        raise NotImplemented(f"Loading from file is not supported for model '{self.getModelName()}'")

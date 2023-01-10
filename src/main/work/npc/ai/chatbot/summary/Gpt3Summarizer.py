@@ -1,7 +1,6 @@
 import logging
 import os
 import re
-from typing import Optional
 
 import openai
 from iso639 import languages
@@ -17,14 +16,15 @@ class Gpt3Summarizer(Summarizer):
     __DEFAULT_TEMPERATURE = 0.1
 
     __PROMPT = {
-        "summary": "\n====\nSummarize the text above{language}, separating key points into paragraphs:\n",
-        "digest": "\n====\nDigest the text above{language}, separating key points into paragraphs:\n",
+        "summary": "\n====\nSummarize the conversation above{language}.  Separate key points into paragraphs:\n",
+        "digest": "\n====\nDigest the text above{language}, separating key points into multiple paragraphs:\n",
         "title": "\n====\nRecommend {numTitles} titles for the text above{language}:\n",
         "conclusion": "\n====\nWhat is the conclusion of the text above{language}:\n",
         "actions": "\n====\nList the action items from the text above{language}:\n",
         "todo": "\n====\n根据上面的对话创建一个提醒以及提醒时间、人物和主题，并判断主题属于哪个类别：0-开会，1-健身，2-学习，3-购物，4-聚会，5-其它:\n",
         "reminder": "\n====\nSet a reminder from the text above{language} with the time of the event:\n",
         "story": "\n====\nSummarize the section of a story above:\n",
+        "rewrite": "\n====\nRewrite the text above{tone}{language}:\n",
     }
 
     @classmethod
@@ -41,7 +41,12 @@ class Gpt3Summarizer(Summarizer):
             self.__portal = Gpt3Portal.of(accessKey)
 
     @classmethod
-    def __getPrompt(cls, mode, languageCode, numTitle) -> str:
+    def __getPrompt(cls, **kwargs) -> str:
+        mode = kwargs.get("mode")
+        numTitles = kwargs.get("numTitles")
+        languageCode = kwargs.get("language")
+        tone = kwargs.get("tone")
+
         if languageCode:
             try:
                 languageName = languages.get(alpha2=languageCode).name
@@ -52,18 +57,21 @@ class Gpt3Summarizer(Summarizer):
         else:
             language = ""
 
+        tone = f" with a {tone} tone" if tone else ""
+
         prompt = cls.__PROMPT.get(mode, None)
         if not prompt:
             raise RuntimeError(f"Mode {mode} not supported")
 
-        return prompt.format(language=language, numTitle=numTitle)
+        return prompt.format(language=language, numTitles=numTitles, tone=tone)
 
     @classmethod
-    def __cleanUpText(cls, text: str, mode: str, numTitles: int, language: Optional[str]) -> str:
+    def __cleanUpText(cls, text: str, **kwargs) -> str:
 
         # Remove empty lines and leading and trailing spaces
         lines = [s.strip() for s in text.splitlines()]
 
+        mode = kwargs.get("mode")
         if mode in ["title", "digest"]:
             # Remove speakers
             lines = [s for s in lines if not re.match(r"[^:]*:$", s)]
@@ -72,7 +80,7 @@ class Gpt3Summarizer(Summarizer):
         lines = [s for s in lines if not re.match(r"\d{2}:\d{2}$", s)]
 
         # Put back text
-        text = os.linesep.join([s for s in lines if s]) + cls.__getPrompt(mode, language, numTitles)
+        text = os.linesep.join([s for s in lines if s]) + cls.__getPrompt(**kwargs)
 
         return text
 
@@ -80,15 +88,13 @@ class Gpt3Summarizer(Summarizer):
         if not text:
             return ""
 
-        mode = kwargs.get("mode", "summarize")
-        numTitles = kwargs.get("numTitles", 3)
-        language = kwargs.get("language", None)
-        prompt_param = kwargs.get("prompt", None)
+        mode = kwargs.get("mode")
+        prompt_param = kwargs.get("prompt")
 
         if prompt_param and mode in ["todo", "reminder"]:
             prompt = "{}\n\n\n{}".format(text, prompt_param)
         else:
-            prompt = self.__cleanUpText(text, mode, numTitles, language)
+            prompt = self.__cleanUpText(text, **kwargs)
         logging.info(f"Prompt = \n{prompt}")
 
         try:

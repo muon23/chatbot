@@ -5,8 +5,8 @@ from typing import TypeVar, Iterator, Optional, List
 class Bot(ABC):
     Bot = TypeVar("Bot")
 
-    def __init__(self, name: str = "Bot"):
-        self.name = name
+    def __init__(self, **kwargs):
+        self.name = kwargs.get("name", "Bot")
 
     @abstractmethod
     async def modifyConversation(self, instruction, **kwargs):
@@ -26,4 +26,8 @@ class Bot(ABC):
 
     @abstractmethod
     def getModelName(self) -> str:
+        pass
+
+    @abstractmethod
+    async def load(self, script: List[str]):
         pass

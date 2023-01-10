@@ -80,9 +80,9 @@ class Gpt3BotConversation:
     MIN_UTTERANCES = 6
     NARRATION = "NARRATION"
 
-    def __init__(self, name: str, persona: List[str], **kwargs):
-        self.name = name
-        self.persona: List[str] = [self.__changeSubject(fact, name) for fact in persona]
+    def __init__(self, persona: List[str], **kwargs):
+        self.name = kwargs.get("name")
+        self.persona: List[str] = [self.__changeSubject(fact, self.name) for fact in persona]
         self.personaTokens: int = sum([Gpt3Portal.estimateTokens(fact) for fact in self.persona])
         self.conversation: List[Gpt3BotUtterance] = []
         self.summaries: List[Gpt3BotSummary] = []
@@ -93,8 +93,13 @@ class Gpt3BotConversation:
         self.maxTokens: int = kwargs.get("maxTokens", 3000)
 
         userChinese = any([Languages.isIdeography(c) for c in self.name])
-        self.me = "我" if userChinese else "I"
+
+        me = kwargs.get("you", None)   # For the bot, "you" is the user.
+        self.me = me if me else "我" if userChinese else "I"
         self.you = "你" if userChinese else "You"
+
+        self.replaceMe = None
+        self.redoMark = 0
 
         logging.info(f"Persona: {self.persona}")
 
@@ -104,7 +109,7 @@ class Gpt3BotConversation:
         fact = fact.replace("我", name)
         fact = fact.replace("你", "我")
 
-        words = re.split("[ ,.!?]", fact)
+        words = re.findall(r"[\w']+|[.,!?;]", fact)
         changed = []
         for word in words:
             if not word:
@@ -124,6 +129,7 @@ class Gpt3BotConversation:
             )
         fact = " ".join(changed)
 
+        fact = re.sub(r'\s([.,!?;](?:\s|$))', r'\1', fact)
         fact = re.sub(r"I\s+are", "I am", fact)
         fact = re.sub(r"I\s+were", "I was", fact)
 
@@ -142,6 +148,12 @@ class Gpt3BotConversation:
         if speaker is None:
             speaker = self.nextSpeaker()
 
+        if speaker == self.me:
+            self.redoMark = self.length()
+            if self.replaceMe:
+                speaker = self.replaceMe
+                self.replaceMe = None
+
         utt = Gpt3BotUtterance(speaker, utterance)
         self.conversation.append(utt)
         self.activeUtteranceTokens += utt.tokens
@@ -156,13 +168,7 @@ class Gpt3BotConversation:
             tokens2Summarize = self.maxActiveUtteranceTokens // 2
             self.activeUtteranceTokens -= tokens2Summarize
             while tokens2Summarize > 0:
-                try:
-                    tokens2Summarize -= self.conversation[summarizeEndIdx].tokens
-                except IndexError as e:
-                    # An reproducible bug occurs here
-                    ss = " ".join([f"{s.begin},{s.end},{s.tokens}" for s in self.summaries])
-                    logging.error(f"sei={summarizeEndIdx}, len={self.length()}, tts={tokens2Summarize}, aut={self.activeUtteranceTokens}, ss=[{ss}]")
-                    raise e
+                tokens2Summarize -= self.conversation[summarizeEndIdx].tokens
                 summarizeEndIdx += 1
             self.activeUtteranceTokens += tokens2Summarize
 
@@ -173,13 +179,18 @@ class Gpt3BotConversation:
         # Calculate prompt tokens.  If exceeds limit, summarize the summaries.
         promptTokens = self.personaTokens + self.summaryTokens + self.activeUtteranceTokens
         while promptTokens >= self.maxTokens:
+            logging.info(f"Prompt tokens ({promptTokens}) exceeds maximum prompt allowance ({self.maxTokens})")
             if len(self.summaries) < 2:
                 # Cannot summarize further
                 raise Gpt3Portal.TooManyTokensError("Token limit exceeded.  Cannot summarize any further.")
 
-            summary = await Gpt3BotSummary.ofSummaries(self.summaries[0:1])
-            promptTokens -= self.summaries[0].tokens + self.summaries[1].tokens - summary.tokens
-            self.summaries = [summary] + summary[2:]
+            toSummarize = int(max(len(self.summaries) // 2.5, 2))
+            logging.info(f"Summarizing {toSummarize} summaries")
+            summary = await Gpt3BotSummary.ofSummaries(self.summaries[:toSummarize])
+            tokenDiff = sum(self.summaries[i].tokens for i in range(toSummarize)) - summary.tokens
+            promptTokens -= tokenDiff
+            self.summaries = [summary] + self.summaries[toSummarize:]
+            self.summaryTokens -= tokenDiff
 
     async def summarize(self):
         self.summaries = []
@@ -247,13 +258,9 @@ class Gpt3BotConversation:
 
     def redo(self):
         # Clear anything after and include the last utterance from the user
-        try:
-            while self.conversation[-1].speaker != self.me:
-                self.conversation.pop()
+        num2pop = self.length() - self.redoMark
+        for _ in range(num2pop):
             self.conversation.pop()
-            self.__recalculateActiveUtteranceTokens()
-        except IndexError:
-            pass
 
     def __parseReplacement(self, replacement: str):
         m = re.match(r"^\s*((\d+)\.)?\s*\(\s*([^()]+)\s*\)\s*$", replacement)

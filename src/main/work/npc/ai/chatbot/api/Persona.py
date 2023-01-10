@@ -1,6 +1,6 @@
 import logging
 import time
-from typing import Optional, Iterator, Dict
+from typing import Optional, Iterator, Dict, List
 
 import bson
 
@@ -19,7 +19,7 @@ class Persona:
             enum = f"{idx:-3}. " if withEnum else ""
             yield f"{enum}{utterance}"
 
-    def getPersona(self) -> str:
+    def getPersona(self) -> List[str]:
         return self.bot.getPersona()
 
 

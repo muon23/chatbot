@@ -18,12 +18,9 @@ class SummaryHandler(HTTPMethodView):
         logging.info(f"POST: {payload}")
 
         model = payload.get("model", "gpt3")
-        text = payload.get("text", "")
         mode = payload.get("mode", "summary")
         numTitles = payload.get("numTitles", 1)
         language = payload.get("language", None)
-        prompt = payload.get("prompt", None)
-        tone = payload.get("tone", None)
 
         sanic = Sanic.get_app()
 
@@ -34,9 +31,7 @@ class SummaryHandler(HTTPMethodView):
             if summarizer is None:
                 return self.error(f"Unknown chat bot model {model}")
 
-            summary = await summarizer.summarize(
-                text, mode=mode, numTitles=numTitles, language=language, prompt=prompt, tone=tone
-            )
+            summary = await summarizer.summarize(**payload)
 
             response = {
                 "version": sanic.config.VERSION,

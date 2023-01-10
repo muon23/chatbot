@@ -1,0 +1,127 @@
+{
+  "dialog": [
+    {
+      "speaker": "CJ Wang",
+      "utterances": [
+        "we are discussing the classification",
+        "the first version will be very simple.  We will define some topics like health, food, pets, work, traveling....",
+        "so, please on focusing this kind of classification first",
+        "so, transformer on top of bert should work.  we can train on open source datasets"
+      ]
+    },
+    {
+      "speaker": "Ben Goldsmith",
+      "utterances": [
+        "The datasets need to be classified into those topics. I can look for some. Did they decide on any specific topics"
+      ]
+    },
+    {
+      "speaker": "CJ Wang",
+      "utterances": [
+        "not yet.  I'll get those to you ASAP."
+      ]
+    },
+    {
+      "speaker": "Ben Goldsmith",
+      "utterances": [
+        "Sounds good"
+      ]
+    },
+    {
+      "speaker": "CJ Wang",
+      "utterances": [
+        "They call those shared link 'digest'.  Kinda like reader's digest",
+        "@[Ben Goldsmith] AI-8 assigned to you"
+      ]
+    },
+    {
+      "speaker": "Ben Goldsmith",
+      "utterances": [
+        "Any news on categories?"
+      ],
+      "replyToSpeaker": "CJ Wang",
+      "replyToUtterance": "not yet.  I'll get those to you ASAP."
+    },
+    {
+      "speaker": "CJ Wang",
+      "utterances": [
+        "I’ll have meetings tonight"
+      ]
+    },
+    {
+      "speaker": "Ben Goldsmith",
+      "utterances": [
+        "ok"
+      ]
+    },
+    {
+      "speaker": "CJ Wang",
+      "utterances": [
+        "But for now assuming some obvious"
+      ]
+    },
+    {
+      "speaker": "Ben Goldsmith",
+      "utterances": [
+        "ok"
+      ]
+    },
+    {
+      "speaker": "CJ Wang",
+      "utterances": [
+        "Tavel. Food recipes. Health. School…"
+      ]
+    },
+    {
+      "speaker": "Ben Goldsmith",
+      "utterances": [
+        "School == Education"
+      ]
+    },
+    {
+      "speaker": "CJ Wang",
+      "utterances": [
+        "Something around things 20-50 years will do",
+        "That is targeted users"
+      ]
+    },
+    {
+      "speaker": "Ben Goldsmith",
+      "utterances": [
+        "School == Education",
+        "Kid’s education"
+      ]
+    },
+    {
+      "speaker": "Ben Goldsmith",
+      "utterances": [
+        "Are you saying topics users aged 20-50 would be interested in?"
+      ]
+    },
+    {
+      "speaker": "CJ Wang",
+      "utterances": [
+        "Yes",
+        "With work and probably with family"
+      ]
+    },
+    {
+      "speaker": "Ben Goldsmith",
+      "utterances": [
+        "That's incredibly broad.  I'll use the topics you suggested and maybe add money and entertainment"
+      ]
+    },
+    {
+      "speaker": "CJ Wang",
+      "utterances": [
+        "Get the mechanic working. The topics will likely be changed all the time anyway"
+      ]
+    },
+    {
+      "speaker": "Ben Goldsmith",
+      "utterances": [
+        "Ok"
+      ]
+    }
+  ]
+}

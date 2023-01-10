@@ -1,11 +1,10 @@
 import logging
 import os
 import re
-from typing import Optional
+from typing import Dict, List
 
 import openai
 from iso639 import languages
-# from ftlangdetect.detect import get_or_load_model, detect
 
 from work.npc.ai.chatbot.summary.Summarizer import Summarizer
 from work.npc.ai.utilities.Gpt3Portal import Gpt3Portal
@@ -18,9 +17,9 @@ class Gpt3Summarizer(Summarizer):
     __DEFAULT_TEMPERATURE = 0.1
 
     __PROMPT = {
-        "summary": "\n====\nSummarize the conversation above{language}.  Separate key points into paragraphs:\n",
-        "digest": "\n====\nDigest the text above{language}, separating key points into multiple paragraphs:\n",
-        "title": "\n====\nRecommend {numTitles} titles for the text above{language}:\n",
+        "summary": "\n====\nSummarize the above{language}.  Separate key points into paragraphs:\n",
+        "digest": "\n====\nDigest the above{language}, separating key points into multiple paragraphs:\n",
+        "title": "\n====\nRecommend {numTitles} for the text above{language}:\n",
         "conclusion": "\n====\nWhat is the conclusion of the text above{language}:\n",
         "actions": "\n====\nList the action items from the text above{language}:\n",
         "todo": "\n====\n根据上面的对话创建一个提醒以及提醒时间、人物和主题，并判断主题属于哪个类别：0-开会，1-健身，2-学习，3-购物，4-聚会，5-其它:\n",
@@ -42,15 +41,12 @@ class Gpt3Summarizer(Summarizer):
 
             self.__portal = Gpt3Portal.of(accessKey)
 
-        # download fasttext language detect model
-        # get_or_load_model()
-
     @classmethod
     def __getPrompt(cls, **kwargs) -> str:
-        mode = kwargs.get("mode")
-        numTitles = kwargs.get("numTitles")
-        languageCode = kwargs.get("language")
-        tone = kwargs.get("tone")
+        mode = kwargs.get("mode", "summary")
+        numTitles = kwargs.get("numTitles", 1)
+        languageCode = kwargs.get("language", None)
+        tone = kwargs.get("tone", None)
 
         if languageCode:
             try:
@@ -84,24 +80,80 @@ class Gpt3Summarizer(Summarizer):
         # Remove timestamps
         lines = [s for s in lines if not re.match(r"\d{2}:\d{2}$", s)]
 
+        # numTitles optimize
+        numTitles = kwargs.get("numTitles", 1)
+        kwargs["numTitles"] = f"a title" if numTitles == 1 else f"{numTitles} titles"
+
         # Put back text
         text = os.linesep.join([s for s in lines if s]) + cls.__getPrompt(**kwargs)
 
         return text
 
-    async def summarize(self, text: str, **kwargs) -> str:
-        if not text:
-            return ""
+    @classmethod
+    def __cleanUpDialog(cls, dialog: List[Dict[str, str]], **kwargs) -> str:
 
+        mode = kwargs.get("mode")
+        speakers = set()
+        text = ""
+
+        for line in dialog:
+            try:
+                speaker = line.get("speaker")
+                utterances = line.get("utterances")
+            except KeyError:
+                continue   # Ignore anything without these fields
+
+            if not isinstance(utterances, list):
+                utterances = [utterances]
+
+            replyToSpeaker = line.get("replyToSpeaker", None)
+            replyToUtterance = line.get("replyToUtterance", "")
+
+            replyTo = f"(in reply to {replyToSpeaker}: {replyToUtterance[:20]}...)" if replyToSpeaker else ""
+
+            spoken = os.linesep.join(utterances)
+            spoken = re.sub(r"@\[([^]]+)]", r"(to \1)", spoken)
+
+            speakers.add(speaker)
+
+            if mode in ["title", "digest"]:
+                text += f"{spoken}\n"
+            else:
+                text += f"{speaker}: {replyTo} {spoken}\n\n"
+
+        speakers = list(speakers)
+        numSpeakers = len(speakers)
+        if numSpeakers <= 1:
+            group = f"talk from {speakers[0]}"
+        elif numSpeakers == 2:
+            group = f"conversation between {speakers[0]} and {speakers[1]}"
+        else:
+            group = f"conversation amongst {', '.join(speakers[:-1])} and {speakers[-1]}"
+
+        # numTitles optimize
+        numTitles = kwargs.get("numTitles", 1)
+        kwargs["numTitles"] = f"a title" if numTitles == 1 else f"{numTitles} titles"
+
+        text = os.linesep.join([
+            f"Consider the following conversation {group}:",
+            "~~~",
+            text,
+            "~~~",
+            cls.__getPrompt(**kwargs)
+        ])
+
+        return text
+
+    async def summarize(self, **kwargs) -> str:
+        text = kwargs.pop("text", "")
+        dialog = kwargs.pop("dialog", [])
         mode = kwargs.get("mode")
         prompt_param = kwargs.get("prompt")
 
-        # if language is None:
-        #     lang_detect = detect(text=text.replace("\n", " "), low_memory=False)
-        #     language = lang_detect["lang"]
-
         if prompt_param and mode in ["todo", "reminder"]:
             prompt = "{}\n\n\n{}".format(text, prompt_param)
+        elif dialog:
+            prompt = self.__cleanUpDialog(dialog, **kwargs)
         else:
             prompt = self.__cleanUpText(text, **kwargs)
         logging.info(f"Prompt = \n{prompt}")

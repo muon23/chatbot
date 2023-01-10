@@ -56,7 +56,7 @@ paths:
                   items:
                     type: string
                   example: ["Alice", "Bob", "Chip"]
-                utterances:
+                dialog:
                   type: array
                   description: The converstation among the speakers
                   items:
@@ -67,11 +67,13 @@ paths:
                         required: true
                         description: The name of the speaker
                         example: "Alice"
-                      utterance:
-                        type: string
+                      utterances:
+                        type: array
+                        items:
+                          type: string
                         required: true
                         description: What the speaker says
-                        example: "I am fine, thank you."
+                        example: ["I am fine, thank you.", "How about you?"]
                       replyToSpeaker:
                         type: string
                         description: If the utterance is a reply to a pervious spaker

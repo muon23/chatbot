@@ -1,11 +1,11 @@
 import os
 import sys
-from pyapollo.apollo_client import ApolloClient
+# from pyapollo.apollo_client import ApolloClient
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src/main')))
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../commons/src/main')))
 
-from work.npc.ai.chatbot.api.ChatBotServer import ChatBotServer
+from cj.chatbot.api.ChatBotServer import ChatBotServer
 from dotenv import load_dotenv
 
 os.environ["CHATBOT_PROJECT_ROOT"] = os.path.abspath("..")
@@ -28,15 +28,15 @@ if environment != "local":
     namespace = os.environ.get("NAMESPACE")
     openai_key = os.environ.get("OPENAI_KEY")
 
-    client = ApolloClient(
-        app_id=app_id,
-        config_server_url=config_server_url,
-        authorization=authorization,
-        cache_file_path=cache_file_path,
-        env=env
-    )
-    client.start()
-
-    os.environ["OPENAI_KEY"] = client.get_value(openai_key, "default", namespace)
+    # client = ApolloClient(
+    #     app_id=app_id,
+    #     config_server_url=config_server_url,
+    #     authorization=authorization,
+    #     cache_file_path=cache_file_path,
+    #     env=env
+    # )
+    # client.start()
+    #
+    # os.environ["OPENAI_KEY"] = client.get_value(openai_key, "default", namespace)
 
 ChatBotServer.main(debugArgs=["-c", f"{projectRoot}/deployment/{environment}/chatbot.yml"])

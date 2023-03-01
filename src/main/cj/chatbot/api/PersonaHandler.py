@@ -7,7 +7,7 @@ from sanic.views import HTTPMethodView
 
 from cj.chatbot.api.Persona import Personas
 from cj.chatbot.bots.Gpt3Bot import Gpt3Bot
-from cj.chatbot.bots.ParlaiBot import ParlaiBot
+# from cj.chatbot.bots.ParlaiBot import ParlaiBot
 from cj.chatbot.bots.TransformerBot import TransformerBot
 
 
@@ -56,7 +56,7 @@ class PersonaHandler(HTTPMethodView):
         try:
             bot = (
                     TransformerBot.of(botPersona, modelName=botModel, **payload) or
-                    ParlaiBot.of(botPersona, modelName=botModel, **payload) or
+                    # ParlaiBot.of(botPersona, modelName=botModel, **payload) or
                     Gpt3Bot.of(botPersona, modelName=botModel, **payload)
             )
             if bot is None:

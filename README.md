@@ -1,26 +1,46 @@
-# Open Domain Chat Bot
+# AI Assisted Story Writing
 
-This project implements a chatbot that carry on a conversation with a user.
-One can give the bot a background persona and it will assume the role and chat accordingly.
+This project originally was an open-domain chatbot.
+Then, it morphed into an AI assistant that helps me write a story.
+It can continue my story lines, often introducing twist or injecting new ideas that I didn't think of before.
+I found it quite fun to interact with it to see how, together, we could bring a story into an unknown territory.
+
+I am currently developing a front-end Web UI with my spare time.
+
+
 
 ## Summarizer API
 
-A complete definition of the API is in the Swagger file "[swagger.yaml](https://gitlab.com/npc-work/npc-work-research/chatbot/-/blob/main/swagger.yaml)".
+A complete definition of the API is in the Swagger file "[swagger.yaml](https://github.com/muon23/chatbot/blob/master/swagger.yaml)".
 
 ### A Usage Example
 
 The base path of the API depends on how the server is deployed.
-In the following examples, the base path `http://localhost:8080/tankabot` is used.
+In the following examples, the base path `http://localhost:8080/muon` is used.
 
 #### Summarize a Text
 
 The simplest way to summarize a text is with only the "text" field in the request.
 
 ```
-POST http://localhost:8080/tankabot/summary
+POST http://localhost:8080/muon/summary
 
 {
-  "text": "Tianqiao Chen\n@Vincent 朱赟  volunteer 那个功能本身可以是调性的一个重要部分\n21:15\nTianqiao Chen\n调性并不是写写画画，有的时候可以从宣传小的贴心的功能开始\n21:16\nTianqiao Chen\n比方说我们的自动翻译，强调了人和人之间交流不应该有隔阂\n21:16\nTianqiao Chen\n比方说volunteer： 善良有爱心有责任心\n21:17\nTianqiao Chen\n@Evangeline Wang 如果你要好一些功能的调性，不要上来就说这个不对要改正那个\n21:17\nTianqiao Chen\n而是实实在在的增加一些小东西\n21:18\nTianqiao Chen\n而不要急着去改变一个东西。只要改变都会涉及到历史问题\n21:19\nTianqiao Chen\n@Jonathan 比方说我的那个👍，能不能就比所有竞品大，不但体现出潮，而且体现出简单深刻里面的简单这个特点！\n21:19\nTianqiao Chen\n千言万语，一个赞就够了，这个赞岂不是位置要更大一些？\n21:20\nTianqiao Chen\n@Evangeline Wang 这就是软装，这就是调性，多去找一些这些细节不断提升，拿出一个简易表出来\n22:25\nJonathan\nTianqiao Chen\n@Jonathan 比方说我的那个👍，能不能就比所有竞品大，不但体现出潮，而且体现出简单深刻里面的简单这个特点！\n\n陈总这么一说，我有了创意，后面做成demo动效给陈总和大家看。\n22:49\nTianqiao Chen\n呵呵，以后不要等我“这么一说“\n22:50\nJonathan\n哦😄\n23:34\nEvangeline Wang\nTianqiao Chen\n@Evangeline Wang 这就是软装，这就是调性，多去找一些这些细节不断提升，拿出一个简易表出来\n\n明白，我明白陈总的意思了。我把值得优化的点逐个整理出来\n12/1/2022 7:43\nTianqiao Chen\n总结一下你想在tanka 用户里放的label，比方说乐于助人，有责任心\n7:44\nTianqiao Chen\n然后去找地方体现出来\n16:35\nEvangeline Wang\n明白"
+  "text": [
+    "(As April was descending down to the surface of the Luytan b, she thought about how much mankind has to do to get her here.)",
+    "(It is truly a multi-generation mission.  It took decades of preparation on Earth, 164 years to arrive at the Luytan system, and another 10 years to settle on Luytan b's orbit.)",
+    "(This was an all female crew on the journey.  Six individuals gave birth in turn to each other's clones every 15 years or so.  They were particularly chosen to have the traits that was suitable for space travel.)",
+    "(About 16 years ago, they started impregnating themselves with embryos with explorer traits.  April was the oldest one of the 5 individuals of the explorer generation.)",
+    "(She knew that she was a disposable first try.  If she failed, her younger explorer cousins  would follow her.  She was content, for her life was prepared for this moment.)",
+    "(The planet was bigger than the Earth.  had 1.5G of gravity.  It had a very thick atmosphere, of which 30% was oxygen.)",
+    "(Luytan b were actually a twin planet with its large moon, b1.  They were tidal locked to each other.)",
+    "(It was very wet.  Low clouds and rain most of the time on most of the planet's surface. It was very hard to observe the surface from the orbit.)",
+    "(From the orbit, they could see huge balloon-like colonies of plants growing to the top of the cloud.  They seemed being tethered to the ground below because their position shifted with the winds but never moved to far.)",
+    "(They sent some probes to explore landing areas.  This spot was chosen for its dryness.  It looked like a grassland from above and can see the reddish sun, the Luytan's Star, most of the time.)",
+    "(A jolt woke her up from her thoughts.  They had landed successfully.  Nothing she could do during the descent but accepting her fate.  The lander was automated.  She was elated when she was landed safely.)",
+    "April: Chip, here we are.  The first human to step on the soil of an exoplanet.  (To her mother in orbit) Mom, I have landed.  (Cheers of her aunties' voices from the intercom.) Switching on the visual."
+  ]
+ }
 }
 ```
 
@@ -28,8 +48,8 @@ This will get the following response:
 
 ```
 {
-  "version": "0.4.1",
-  "summary": "Tianqiao Chen discussed the importance of tone when it comes to developing features for a product. He suggested that instead of immediately changing something, small additions can be made to emphasize the connection between people. For example, he mentioned the automatic translation feature which emphasizes that there should be no barriers between people. He also suggested that volunteer features should emphasize kindness, love, and responsibility. \n\nHe then gave an example of how to improve the tone of a feature. He suggested making the \"like\" button bigger than the competition to emphasize its simplicity and coolness. \n\nFinally, he suggested summarizing the labels that should be used in Tanka for users, such as being helpful and responsible. He then suggested finding ways to emphasize these labels."
+  "version": "0.4.14",
+  "summary": "April was part of an all-female crew that had been travelling for 164 years to reach the Luytan system. The crew had been specially chosen for their traits suitable for space travel, and had been impregnating themselves with embryos with explorer traits for the past 16 years. April was the oldest of the 5 individuals of the explorer generation.\n\nLuytan b was a twin planet with its large moon, b1, and had a thick atmosphere with 30% oxygen. From the orbit, they could see huge balloon-like colonies of plants growing to the top of the cloud. After sending probes to explore landing areas, they chose a grassland spot for its dryness.\n\nApril was elated when the lander successfully landed, making her the first human to step on the soil of an exoplanet. She switched on the visual and reported her success to her mother in orbit, who was met with cheers from her aunties."
 }
 ```
 
@@ -38,11 +58,11 @@ This will get the following response:
 One may want to summarize in Chinese (or other languages).  To do this, one may add the "language" field.
 
 ```
-POST http://localhost:8080/tankabot/summary
+POST http://localhost:8080/muon/summary
 
 {
   "language": "zh",
-  "text": "Tianqiao Chen\n@Vincent 朱赟  volunteer 那个功能本身可以是调性的一个重要部分\n21:15\nTianqiao Chen\n调性并不是写写画画，有的时候可以从宣传小的贴心的功能开始\n21:16\nTianqiao Chen\n比方说我们的自动翻译，强调了人和人之间交流不应该有隔阂\n21:16\nTianqiao Chen\n比方说volunteer： 善良有爱心有责任心\n21:17\nTianqiao Chen\n@Evangeline Wang 如果你要好一些功能的调性，不要上来就说这个不对要改正那个\n21:17\nTianqiao Chen\n而是实实在在的增加一些小东西\n21:18\nTianqiao Chen\n而不要急着去改变一个东西。只要改变都会涉及到历史问题\n21:19\nTianqiao Chen\n@Jonathan 比方说我的那个👍，能不能就比所有竞品大，不但体现出潮，而且体现出简单深刻里面的简单这个特点！\n21:19\nTianqiao Chen\n千言万语，一个赞就够了，这个赞岂不是位置要更大一些？\n21:20\nTianqiao Chen\n@Evangeline Wang 这就是软装，这就是调性，多去找一些这些细节不断提升，拿出一个简易表出来\n22:25\nJonathan\nTianqiao Chen\n@Jonathan 比方说我的那个👍，能不能就比所有竞品大，不但体现出潮，而且体现出简单深刻里面的简单这个特点！\n\n陈总这么一说，我有了创意，后面做成demo动效给陈总和大家看。\n22:49\nTianqiao Chen\n呵呵，以后不要等我“这么一说“\n22:50\nJonathan\n哦😄\n23:34\nEvangeline Wang\nTianqiao Chen\n@Evangeline Wang 这就是软装，这就是调性，多去找一些这些细节不断提升，拿出一个简易表出来\n\n明白，我明白陈总的意思了。我把值得优化的点逐个整理出来\n12/1/2022 7:43\nTianqiao Chen\n总结一下你想在tanka 用户里放的label，比方说乐于助人，有责任心\n7:44\nTianqiao Chen\n然后去找地方体现出来\n16:35\nEvangeline Wang\n明白"
+  "text": ...
 }
 ```
 
@@ -50,8 +70,8 @@ This may get the result like this:
 
 ```
 {
-  "version": "0.4.1",
-  "summary": "陈天桥在讨论如何调性的时候，提出了一些有用的建议。他建议不要急着去改变一个东西，而是实实在在的增加一些小东西，比如自动翻译，强调人与人之间的交流不应该有隔阂。此外，他还提到了volunteer，善良有爱心有责任心，这也是一种调性。\n\n他还提到了一个具体的例子，就是👍，能不能就比所有竞品大，不但体现出潮，而且体现出简单深刻里面的简单这个特点！最后，他总结了一下想要在tanka用户里放的label，比如乐于助人，有责任心等等。",
+  "version": "0.4.15",
+  "summary": "April是第一个登陆Luytan b行星的人类，她的旅程从地球准备开始，经过164年的旅行到达Luytan系统，又经过10年的定居，这是一支全女性船员的航行，每15年左右互相生育克隆体，16年前开始植入探险者基因的胚胎，April是最年长的5个探险者之一，Luytan b是一个双行星系统，有一个大卫星，重力1.5G，大气中有30%的氧气，大部分地表都是湿润的，有巨大的植物气球团聚在云层上，他们选择一个干燥的地方降落，最终April成功登陆，开启了人类探索外星行星的历史。",
   "language": "zh"
 }
 ```
@@ -63,13 +83,13 @@ This can be done with the "mode" field set to "title".
 An optional field "numTitles" can be set for number of titles generated.  The default is 3.
 
 ```
-POST http://localhost:8080/tankabot/summary
+POST http://localhost:8080/muon/summary
 
 {
   "mode": "title",
   "numTitles": 4,
   "language": "zh",
-  "text": "Tianqiao Chen\n@Vincent 朱赟  volunteer 那个功能本身可以是调性的一个重要部分\n21:15\nTianqiao Chen\n调性并不是写写画画，有的时候可以从宣传小的贴心的功能开始\n21:16\nTianqiao Chen\n比方说我们的自动翻译，强调了人和人之间交流不应该有隔阂\n21:16\nTianqiao Chen\n比方说volunteer： 善良有爱心有责任心\n21:17\nTianqiao Chen\n@Evangeline Wang 如果你要好一些功能的调性，不要上来就说这个不对要改正那个\n21:17\nTianqiao Chen\n而是实实在在的增加一些小东西\n21:18\nTianqiao Chen\n而不要急着去改变一个东西。只要改变都会涉及到历史问题\n21:19\nTianqiao Chen\n@Jonathan 比方说我的那个👍，能不能就比所有竞品大，不但体现出潮，而且体现出简单深刻里面的简单这个特点！\n21:19\nTianqiao Chen\n千言万语，一个赞就够了，这个赞岂不是位置要更大一些？\n21:20\nTianqiao Chen\n@Evangeline Wang 这就是软装，这就是调性，多去找一些这些细节不断提升，拿出一个简易表出来\n22:25\nJonathan\nTianqiao Chen\n@Jonathan 比方说我的那个👍，能不能就比所有竞品大，不但体现出潮，而且体现出简单深刻里面的简单这个特点！\n\n陈总这么一说，我有了创意，后面做成demo动效给陈总和大家看。\n22:49\nTianqiao Chen\n呵呵，以后不要等我“这么一说“\n22:50\nJonathan\n哦😄\n23:34\nEvangeline Wang\nTianqiao Chen\n@Evangeline Wang 这就是软装，这就是调性，多去找一些这些细节不断提升，拿出一个简易表出来\n\n明白，我明白陈总的意思了。我把值得优化的点逐个整理出来\n12/1/2022 7:43\nTianqiao Chen\n总结一下你想在tanka 用户里放的label，比方说乐于助人，有责任心\n7:44\nTianqiao Chen\n然后去找地方体现出来\n16:35\nEvangeline Wang\n明白"
+  "text": ...
 }
 ```
 
@@ -77,48 +97,28 @@ This results in:
 
 ```
 {
-  "version": "0.4.1",
-  "title": "1. 调性：从小功能开始\n2. 如何改善用户体验：软装的重要性\n3. 乐于助人，有责任心：Tanka用户的标签\n4. 简单深刻：如何改变一个功能",
-  "language": "zh"
+  "title": "1. \"The Long Journey to Luytan b: April's Story\"\n2. \"Exploring a New World: April's Adventure\"\n3. \"The First Human on an Exoplanet: April's Journey\"\n4. \"The Multi-Generational Mission to Luytan b: April's Tale\""
 }
 ```
 
-or 
-```
-POST http://localhost:8080/tankabot/summary
-
-{
-  "mode": "title",
-  "text": "Tianqiao Chen\n@Vincent 朱赟  volunteer 那个功能本身可以是调性的一个重要部分\n21:15\nTianqiao Chen\n调性并不是写写画画，有的时候可以从宣传小的贴心的功能开始\n21:16\nTianqiao Chen\n比方说我们的自动翻译，强调了人和人之间交流不应该有隔阂\n21:16\nTianqiao Chen\n比方说volunteer： 善良有爱心有责任心\n21:17\nTianqiao Chen\n@Evangeline Wang 如果你要好一些功能的调性，不要上来就说这个不对要改正那个\n21:17\nTianqiao Chen\n而是实实在在的增加一些小东西\n21:18\nTianqiao Chen\n而不要急着去改变一个东西。只要改变都会涉及到历史问题\n21:19\nTianqiao Chen\n@Jonathan 比方说我的那个👍，能不能就比所有竞品大，不但体现出潮，而且体现出简单深刻里面的简单这个特点！\n21:19\nTianqiao Chen\n千言万语，一个赞就够了，这个赞岂不是位置要更大一些？\n21:20\nTianqiao Chen\n@Evangeline Wang 这就是软装，这就是调性，多去找一些这些细节不断提升，拿出一个简易表出来\n22:25\nJonathan\nTianqiao Chen\n@Jonathan 比方说我的那个👍，能不能就比所有竞品大，不但体现出潮，而且体现出简单深刻里面的简单这个特点！\n\n陈总这么一说，我有了创意，后面做成demo动效给陈总和大家看。\n22:49\nTianqiao Chen\n呵呵，以后不要等我“这么一说“\n22:50\nJonathan\n哦😄\n23:34\nEvangeline Wang\nTianqiao Chen\n@Evangeline Wang 这就是软装，这就是调性，多去找一些这些细节不断提升，拿出一个简易表出来\n\n明白，我明白陈总的意思了。我把值得优化的点逐个整理出来\n12/1/2022 7:43\nTianqiao Chen\n总结一下你想在tanka 用户里放的label，比方说乐于助人，有责任心\n7:44\nTianqiao Chen\n然后去找地方体现出来\n16:35\nEvangeline Wang\n明白"
-}
-```
-
-This results in:
-
-```
-{
-    "title": "调性：从宣传小的贴心功能开始"
-}
-```
 
 ### Create a Reminder
 ```
-POST http://localhost:8080/tankabot/summary
+POST http://localhost:8080/muon/summary
 
 {
   "language": "en",
   "mode": "reminder",
-  "text": "gong: 华哥，关于获取数据的事情，和相关人沟通了下时间，定于今天下午5点左右讨论下，不知道这个时间点对你这边是否合适？ Hua Zhang: 我有空的 gong: 好的 华哥，花花现在还在面试，大概还需要10分钟左右，5点我们是先讨论还是等花花结束后一起 Hua Zhang: 等一下他吧 gong: 好的",
-  "prompt": ""
-}
+  "text": "April: We are going to have a Super Bowl party this Sunday at 3. wanta join?\nMax: Sure, but I can only be there an hour later.  Is that alright?\nApril: No problem.  Bring some beers."
+ }
 ```
 
 A possible result:
 
 ```
 {
-  "version": "0.4.1",
-  "reminder": "Reminder: Discuss data acquisition at 5 pm today.",
+  "version": "0.4.14",
+  "reminder": "Reminder: Super Bowl party this Sunday at 4 pm.",
   "language": "en"
 }
 ```
@@ -141,7 +141,7 @@ A complete definition of the API is in the Swagger file "[swagger.yaml](https://
 ### A Usage Example
 
 The base path of the API depends on how the server is deployed.
-In the following examples, the base path `http://localhost:8080/tankabot` is used.
+In the following examples, the base path `http://localhost:8080/muon` is used.
 
 #### Create a Persona for the bot
 
@@ -149,7 +149,7 @@ The first step is to create a bot with its persona.
 This is achieves by a POST method to the `persona` API, with the request body similar to the following.
 
 ```
-POST http://localhost:8080/tankabot/persona
+POST http://localhost:8080/muon/persona
 
 {
   "persona": [
@@ -205,7 +205,7 @@ The `name` and `model` fields are the names of the bot and model used, for infor
 Once the ID of the persona is obtained, one can chat to the bot with a POST method to the `chat` API with the persona ID.
 
 ```
-POST  http://localhost:8080/tankabot/chat/634a383d6890320d447b9878
+POST  http://localhost:8080/muon/chat/634a383d6890320d447b9878
 
 {
   "utterance": "Hey, long time no see.  How are you doing?"
@@ -236,7 +236,7 @@ After a few rounds, one may want to review all the previous conversation with th
 This is done with a GET method to the `chat` API with the persona ID.
 
 ```
-GET  http://localhost:8080/tankabot/chat/634a383d6890320d447b9878
+GET  http://localhost:8080/muon/chat/634a383d6890320d447b9878
 ```
 
 The server may respond with this:
@@ -272,7 +272,7 @@ The `conversation` field lists one's conversation with the bot so far.
 If one want the bot to forget about the current conversation, one may add a `reset` field to the `chat` POST API request.
 
 ```
-POST  http://localhost:8080/tankabot/chat/634a383d6890320d447b9878
+POST  http://localhost:8080/muon/chat/634a383d6890320d447b9878
 
 {
   "utterance": "Hello.",
@@ -294,7 +294,7 @@ And the server may respond:
 If one use the GET method, he shall see the previous session of the conversation are all gone.
 
 ```
-GET  http://localhost:8080/tankabot/chat/634a383d6890320d447b9878
+GET  http://localhost:8080/muon/chat/634a383d6890320d447b9878
 ```
 ``` 
 {
@@ -313,13 +313,13 @@ GET  http://localhost:8080/tankabot/chat/634a383d6890320d447b9878
 One can delete a persona with a DELETE method to the `persona` API.
 
 ```
-DELETE   http://localhost:8080/tankabot/persona/634a383d6890320d447b9878
+DELETE   http://localhost:8080/muon/persona/634a383d6890320d447b9878
 ```
 
 If he trys to access the bot with the same ID, he will get this error in response.
 
 ```
-GET  http://localhost:8080/tankabot/chat/634a383d6890320d447b9878
+GET  http://localhost:8080/muon/chat/634a383d6890320d447b9878
 
 {
   "error": "persona 634a383d6890320d447b9878 not found"
@@ -339,7 +339,7 @@ The API in this section allows you to delete or replace them.
 The example in the section is generated by this persona:
 
 ```
-POST  http://localhost:8082/tankabot/persona
+POST  http://localhost:8082/muon/persona
 
 {
   "persona": [
@@ -359,7 +359,7 @@ This is achieved by an argument `enumerate=1` in the GET request of the chat API
 For example:
 
 ```
-GET  http://localhost:8082/tankabot/chat/635d7b1022a554bb67297cb5?enumerate=1
+GET  http://localhost:8082/muon/chat/635d7b1022a554bb67297cb5?enumerate=1
 ```
 
 Then, the utterances are numbered for your reference.
@@ -394,7 +394,7 @@ Then, the utterances are numbered for your reference.
 If you don't like AI's last response, you can add a "redo" in your request like this:
 
 ```
-POST  http://localhost:8082/tankabot/chat/635d7b1022a554bb67297cb5
+POST  http://localhost:8082/muon/chat/635d7b1022a554bb67297cb5
 
 {
    "redo": 1,
@@ -572,7 +572,7 @@ Utterance 16 is a single string, so it is the other speaker after utterance 15.
 Therefore, it is from Luke without needing to say so in the script.
 
 
-## Chat Bot Server Deployment
+## Server Deployment
 
 ### Run locally
 
@@ -619,7 +619,7 @@ Make sure the local environment satisfies the following:
 In addition to being heartbeat for the health of the server, this also triggers the purging of inactive bots.
 
 #### Steps
-*TBD by DevOp*
+*TBD*
 
 
 

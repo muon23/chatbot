@@ -2,10 +2,10 @@
 
 This project originally was an open-domain chatbot.
 Then, it morphed into an AI assistant that helps me write a story.
-It can continue my story lines, often introducing twist or injecting new ideas that I didn't think of before.
+It can continue my story lines, often introducing twist or injecting new ideas that I haven't thought of before.
 I found it quite fun to interact with it to see how, together, we could bring a story into an unknown territory.
 
-I am currently developing a front-end Web UI with my spare time.
+It is powered by GPT-3 and BlenderBot 2.  I am currently developing a front-end Web UI with my spare time.
 
 
 

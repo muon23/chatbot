@@ -7,7 +7,7 @@ I found it quite fun to interact with it to see how, together, we could bring a 
 
 It is powered by GPT-3 and BlenderBot 2.  I am currently developing a front-end Web UI with my spare time.
 
-
+If you are interested in this project, please contact CJ Wang at cjwang77@gmail.com.
 
 ## Summarizer API
 
